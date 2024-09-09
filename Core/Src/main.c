@@ -25,7 +25,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdio.h>
+#include "dht22.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -46,7 +47,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+DHT22_Measurement_t dht22_measurement;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -57,7 +58,22 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+int __io_putchar(int ch)
+{
+	if (ch == '\n') {
+		uint8_t ch2 = '\r';
+		HAL_UART_Transmit(&huart2, &ch2, 1, HAL_MAX_DELAY);
+	}
 
+	HAL_UART_Transmit(&huart2, (uint8_t*) &ch, 1, HAL_MAX_DELAY);
+	return 1;
+}
+
+void delay_us(uint32_t us)
+{
+	__HAL_TIM_SET_COUNTER(&htim6, 0);
+	while (__HAL_TIM_GET_COUNTER(&htim6) < us);
+}
 /* USER CODE END 0 */
 
 /**
@@ -93,13 +109,17 @@ int main(void)
   MX_TIM6_Init();
   MX_I2C3_Init();
   /* USER CODE BEGIN 2 */
-
+  HAL_TIM_Base_Start(&htim6);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  dht22_measurement = DHT22_ReadMeasurement();
+	  printf("Temp: %.1f\n", dht22_measurement.temperature);
+	  printf("Hum:  %.1f%%\n", dht22_measurement.humidity);
+	  HAL_Delay(1000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

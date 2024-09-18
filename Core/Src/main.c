@@ -26,7 +26,9 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
+#include <stdbool.h>
 #include "dht22.h"
+#include "lcd_i2c.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -36,7 +38,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define PCF8574_ADDRESS 	0x4E
+#define PCF8574A_ADDRESS 	0x7E
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -48,6 +51,14 @@
 
 /* USER CODE BEGIN PV */
 DHT22_Measurement_t dht22_measurement;
+lcd_display_t display;
+volatile enum System_state measurement_system_state;
+
+enum System_state {
+  RUNNING,
+  TURN_OFF,
+  IDLE
+};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -73,6 +84,40 @@ void delay_us(uint32_t us)
 {
 	__HAL_TIM_SET_COUNTER(&htim6, 0);
 	while (__HAL_TIM_GET_COUNTER(&htim6) < us);
+}
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	if (GPIO_Pin == B1_Pin)
+	{
+		measurement_system_state++;
+	}
+}
+
+void on_start_animation(void)
+{
+	sprintf((char*) display.first_line, "Enviromental monitor");
+	lcd_display(&display);
+	HAL_Delay(1000);
+	sprintf((char*) display.first_line, "       %c%c", DEGREE_SYMBOL, DEGREE_SYMBOL);
+	sprintf((char*) display.second_line, " ");
+	lcd_display(&display);
+	HAL_Delay(500);
+	sprintf((char*) display.first_line, " ");
+	sprintf((char*) display.second_line, "       %c%c", DEGREE_SYMBOL, DEGREE_SYMBOL);
+	lcd_display(&display);
+	HAL_Delay(500);
+}
+
+void measurement_system_on(void)
+{
+	dht22_measurement = DHT22_ReadMeasurement();
+	printf("Temp: %.1f\n", dht22_measurement.temperature);
+	printf("Hum:  %.1f%%\n", dht22_measurement.humidity);
+	sprintf((char*) display.first_line, "Temp: %.1f%cC", dht22_measurement.temperature, DEGREE_SYMBOL);
+	sprintf((char*) display.second_line, "Hum:  %.1f%%", dht22_measurement.humidity);
+	lcd_display(&display);
+	HAL_Delay(1000);
 }
 /* USER CODE END 0 */
 
@@ -110,16 +155,32 @@ int main(void)
   MX_I2C3_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start(&htim6);
+
+  display.address = PCF8574_ADDRESS;
+  display.backlight = true;
+  lcd_init(&display);
+  on_start_animation();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  dht22_measurement = DHT22_ReadMeasurement();
-	  printf("Temp: %.1f\n", dht22_measurement.temperature);
-	  printf("Hum:  %.1f%%\n", dht22_measurement.humidity);
-	  HAL_Delay(1000);
+	  switch (measurement_system_state) {
+		case RUNNING:
+			measurement_system_on();
+			break;
+		case TURN_OFF:
+			lcd_off(&display);
+			measurement_system_state++;
+			break;
+		case IDLE:
+			// jakiś tryb uśpienia trzasnąć
+			break;
+		default:
+			measurement_system_state = RUNNING;
+			break;
+	  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

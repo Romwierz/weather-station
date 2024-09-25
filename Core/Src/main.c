@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "i2c.h"
+#include "spi.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
@@ -29,6 +30,7 @@
 #include <stdbool.h>
 #include "dht22.h"
 #include "lcd_i2c.h"
+#include "lps25hb_spi.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -118,6 +120,16 @@ void measurement_system_on(void)
 	sprintf((char*) display.second_line, "Hum:  %.1f%%", dht22_measurement.humidity);
 	lcd_display(&display);
 	HAL_Delay(1000);
+
+	sprintf((char*) display.first_line, "Temp: %.1f%cC", readTemperatureC(), DEGREE_SYMBOL);
+	sprintf((char*) display.second_line, "Pres: %.2fhPa ", readPressureMillibars());
+	lcd_display(&display);
+	HAL_Delay(1000);
+
+	sprintf((char*) display.first_line, "Altitude: %.1f", (float)pressureToAltitudeMeters(readPressureMillibars(), 1008.0));
+	sprintf((char*) display.second_line, " ");
+	lcd_display(&display);
+	HAL_Delay(1000);
 }
 /* USER CODE END 0 */
 
@@ -153,6 +165,7 @@ int main(void)
   MX_USART2_UART_Init();
   MX_TIM6_Init();
   MX_I2C3_Init();
+  MX_SPI2_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start(&htim6);
 
@@ -160,6 +173,12 @@ int main(void)
   display.backlight = true;
   lcd_init(&display);
   on_start_animation();
+  if (!lps25hb_init()) {
+	  sprintf((char*) display.first_line, "Brak czujnika");
+	  sprintf((char*) display.second_line, "cisnienia...");
+	  lcd_display(&display);
+	  while (1);
+  }
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -172,6 +191,7 @@ int main(void)
 			break;
 		case TURN_OFF:
 			lcd_off(&display);
+			lps25hb_deinit();
 			measurement_system_state++;
 			break;
 		case IDLE:
@@ -179,6 +199,7 @@ int main(void)
 			break;
 		default:
 			measurement_system_state = RUNNING;
+			lps25hb_init();
 			break;
 	  }
     /* USER CODE END WHILE */

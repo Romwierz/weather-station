@@ -78,7 +78,7 @@ void Error_Handler(void);
 #define SWO_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
-
+void delay_us(uint32_t us);
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

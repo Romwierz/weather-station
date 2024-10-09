@@ -9,8 +9,8 @@
 #include "stm32l4xx_hal.h"
 #include "gpio.h"
 
-#define SIGN_BIT_VALUE 		0x800000
-#define MAX_POSITIVE_VALUE 	0x7FFFFF
+#define SIGN_BIT_VALUE 			0x800000
+#define NON_NEGATIVE_BITS_MSK 	0x7FFFFF
 
 static void writeReg(uint8_t reg, uint8_t value);
 static uint8_t readReg(uint8_t reg);
@@ -19,13 +19,17 @@ static int16_t readTemperatureRaw(void);
 
 bool lps25hb_init(void)
 {
-	if (readReg(WHO_AM_I) == WHO_AM_I_DEFAULT) {
+	if (readReg(WHO_AM_I) != WHO_AM_I_DEFAULT) {
 		return false;
 	}
 
-	// 0xB0 = 0b10110000
-	// PD = 1 (active mode);  ODR = 011 (12.5 Hz pressure & temperature output data rate)
-	writeReg(CTRL_REG1, 0xB0);
+	// 0xC0 = 0b11000000
+	// PD = 1 (active mode);  ODR[2:0] = 100 (25 Hz pressure & temperature output data rate)
+	writeReg(CTRL_REG1, 0xC0);
+	// FIFO_EN = 1
+	writeReg(CTRL_REG2, 0x40);
+	// F_MODE[2:0] = 110 (FIFO Mean mode); WTM_POINT[4:0] = 11111 (32-sample moving average)
+	writeReg(FIFO_CTRL, 0xDF);
 	return true;
 }
 
@@ -76,9 +80,9 @@ static int32_t readPressureRaw(void)
 
 	pressure_raw = (int32_t)(int8_t)rx_data[3] << 16 | (uint16_t)rx_data[2] << 8 | rx_data[1];
 
-	// convert to negative if raw pressure value is greater than max value
-	if (pressure_raw > MAX_POSITIVE_VALUE) {
-		pressure_raw = (pressure_raw & MAX_POSITIVE_VALUE) - SIGN_BIT_VALUE;
+	// convert to negative if raw pressure value is greater than max positive value
+	if (pressure_raw > NON_NEGATIVE_BITS_MSK) {
+		pressure_raw = (pressure_raw & NON_NEGATIVE_BITS_MSK) - SIGN_BIT_VALUE;
 	}
 
 	return pressure_raw;
@@ -87,6 +91,13 @@ static int32_t readPressureRaw(void)
 float readPressureMillibars(void)
 {
 	return (float)readPressureRaw() / 4096.0f;
+}
+
+float pressureToRelativePressure(float temp, float p)
+{
+	const float h = 80; // nasza wysokość n.p.m.
+
+	return p * exp(0.034162608734308f * h / temp);
 }
 
 static int16_t readTemperatureRaw(void)
@@ -113,17 +124,30 @@ float readTemperatureK(void)
 	return 273.15f + 42.5f + (float)readTemperatureRaw() / 480.0f;
 }
 
-// converts pressure in mbar to altitude in meters, using 1976 US
-// Standard Atmosphere model (note that this formula only applies to a
-// height of 11 km, or about 36000 ft)
-//  If altimeter setting (QNH, barometric pressure adjusted to sea
-//  level) is given, this function returns an indicated altitude
-//  compensated for actual regional pressure; otherwise, it returns
-//  the pressure altitude above the standard pressure level of 1013.25
-//  mbar or 29.9213 inHg
-double pressureToAltitudeMeters(float pressure_mbar, float altimeter_setting_mbar)
+/*
+ * @param temp is in Kelvin units
+ * @param p0 must be taken from a weather forecast
+ */
+float pressureToAltitudeMeters(float temp, float p, float p0)
 {
-  return (1.0 - pow((double)pressure_mbar / (double)altimeter_setting_mbar, 0.190263)) * 44330.8;
+  return -29.271769f * temp * log(p / p0);
+}
+
+/*
+ * @param value is the difference between relative pressure measured without calibration and pressure from
+ * weather forecast
+ */
+void lps25hb_calib(uint16_t value)
+{
+	// bit resolution is 1/4096 (2^(-12))
+	// data length is 8 bit less than measurement (2^(24-16))
+	// so value must:
+	// 1) multiplied by 4096 (2^12)
+	// 2) divided by 256 (2^8) (why???)
+	// so overall it must be multiplied by 16 (2^12/2^8)
+	value *= 16;
+	writeReg(RPDS_L, value);
+	writeReg(RPDS_H, value >> 8);
 }
 
 void lps25hb_test(void)

@@ -53,6 +53,9 @@
 
 /* USER CODE BEGIN PV */
 DHT22_Measurement_t dht22_measurement;
+float pressure;
+float p0;
+float temp;
 lcd_display_t display;
 volatile enum System_state measurement_system_state;
 
@@ -80,12 +83,6 @@ int __io_putchar(int ch)
 
 	HAL_UART_Transmit(&huart2, (uint8_t*) &ch, 1, HAL_MAX_DELAY);
 	return 1;
-}
-
-void delay_us(uint32_t us)
-{
-	__HAL_TIM_SET_COUNTER(&htim6, 0);
-	while (__HAL_TIM_GET_COUNTER(&htim6) < us);
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
@@ -121,13 +118,16 @@ void measurement_system_on(void)
 	lcd_display(&display);
 	HAL_Delay(1000);
 
-	sprintf((char*) display.first_line, "Temp: %.1f%cC", readTemperatureC(), DEGREE_SYMBOL);
-	sprintf((char*) display.second_line, "Pres: %.2fhPa ", readPressureMillibars());
+	pressure = readPressureMillibars();
+	temp = readTemperatureC();
+	sprintf((char*) display.first_line, "Temp: %.1f%cC", temp, DEGREE_SYMBOL);
+	sprintf((char*) display.second_line, "Pres: %.2fhPa", pressure);
 	lcd_display(&display);
 	HAL_Delay(1000);
 
-	sprintf((char*) display.first_line, "Altitude: %.1f", (float)pressureToAltitudeMeters(readPressureMillibars(), 1008.0));
-	sprintf((char*) display.second_line, " ");
+	p0 = pressureToRelativePressure(temp + 273.15f, pressure);
+	sprintf((char*) display.first_line, "Altitude: %.1f", pressureToAltitudeMeters(temp + 273.15f, pressure, 1000));
+	sprintf((char*) display.second_line, "p0 = %.2f hPa", p0);
 	lcd_display(&display);
 	HAL_Delay(1000);
 }
@@ -179,6 +179,7 @@ int main(void)
 	  lcd_display(&display);
 	  while (1);
   }
+  lps25hb_calib(6);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -259,7 +260,11 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+void delay_us(uint32_t us)
+{
+	__HAL_TIM_SET_COUNTER(&htim6, 0);
+	while (__HAL_TIM_GET_COUNTER(&htim6) < us);
+}
 /* USER CODE END 4 */
 
 /**

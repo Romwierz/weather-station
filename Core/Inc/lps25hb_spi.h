@@ -58,14 +58,12 @@
 
 bool lps25hb_init(void);
 void lps25hb_deinit(void);
-//static void writeReg(uint8_t reg, uint8_t value);
-//static uint8_t readReg(uint8_t reg);
-//static int32_t readPressureRaw(void);
 float readPressureMillibars(void);
-//static int16_t readTemperatureRaw(void);
+float pressureToRelativePressure(float temp, float p);
 float readTemperatureC(void);
 float readTemperatureK(void);
-double pressureToAltitudeMeters(float pressure_mbar, float altimeter_setting_mbar);
+float pressureToAltitudeMeters(float temp, float p, float p0);
+void lps25hb_calib(uint16_t value);
 void lps25hb_test(void);
 
 #endif /* INC_LPS25HB_SPI_H_ */

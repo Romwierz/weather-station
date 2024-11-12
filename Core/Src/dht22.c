@@ -50,7 +50,7 @@ static uint8_t DHT22_ReadByte(void)
 	return i;
 }
 
-static bool DHT22_Checksum(uint8_t rh_byte1, uint8_t rh_byte2, uint8_t temp_byte1, uint8_t temp_byte2, uint16_t sum)
+__attribute__((unused)) static bool DHT22_Checksum(uint8_t rh_byte1, uint8_t rh_byte2, uint8_t temp_byte1, uint8_t temp_byte2, uint16_t sum)
 {
 	uint16_t calculated_sum = rh_byte1 + rh_byte2 + temp_byte1 + temp_byte2;
 	if ((calculated_sum & 0xf) == sum) {
@@ -78,6 +78,7 @@ DHT22_Measurement_t DHT22_ReadMeasurement(void)
 	TEMP_Byte1 = DHT22_ReadByte();
 	TEMP_Byte2 = DHT22_ReadByte();
 	SUM = DHT22_ReadByte();
+	UNUSED(SUM);
 
 	TEMP = ((TEMP_Byte1 << 8) | TEMP_Byte2);
 	RH = ((RH_Byte1 << 8) | RH_Byte2);

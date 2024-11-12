@@ -74,11 +74,16 @@ void Error_Handler(void);
 #define TMS_GPIO_Port GPIOA
 #define TCK_Pin GPIO_PIN_14
 #define TCK_GPIO_Port GPIOA
+#define B2_Pin GPIO_PIN_12
+#define B2_GPIO_Port GPIOC
+#define B2_EXTI_IRQn EXTI15_10_IRQn
 #define SWO_Pin GPIO_PIN_3
 #define SWO_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 void delay_us(uint32_t us);
+void on_start_animation(void);
+void measurement_system_on(void);
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

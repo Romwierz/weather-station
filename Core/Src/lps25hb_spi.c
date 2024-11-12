@@ -160,4 +160,5 @@ void lps25hb_test(void)
 	writeReg(CTRL_REG1, 0x00);
 	rx_spi = readReg(CTRL_REG1);
 	rx_spi = readReg(FIFO_STATUS);
+	UNUSED(rx_spi);
 }

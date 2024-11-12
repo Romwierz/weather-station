@@ -58,6 +58,7 @@ float p0;
 float temp;
 lcd_display_t display;
 volatile enum System_state measurement_system_state;
+int blink;
 
 enum System_state {
   RUNNING,
@@ -74,63 +75,7 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-int __io_putchar(int ch)
-{
-	if (ch == '\n') {
-		uint8_t ch2 = '\r';
-		HAL_UART_Transmit(&huart2, &ch2, 1, HAL_MAX_DELAY);
-	}
 
-	HAL_UART_Transmit(&huart2, (uint8_t*) &ch, 1, HAL_MAX_DELAY);
-	return 1;
-}
-
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
-{
-	if (GPIO_Pin == B1_Pin)
-	{
-		measurement_system_state++;
-	}
-}
-
-void on_start_animation(void)
-{
-	sprintf((char*) display.first_line, "Enviromental monitor");
-	lcd_display(&display);
-	HAL_Delay(1000);
-	sprintf((char*) display.first_line, "       %c%c", DEGREE_SYMBOL, DEGREE_SYMBOL);
-	sprintf((char*) display.second_line, " ");
-	lcd_display(&display);
-	HAL_Delay(500);
-	sprintf((char*) display.first_line, " ");
-	sprintf((char*) display.second_line, "       %c%c", DEGREE_SYMBOL, DEGREE_SYMBOL);
-	lcd_display(&display);
-	HAL_Delay(500);
-}
-
-void measurement_system_on(void)
-{
-	dht22_measurement = DHT22_ReadMeasurement();
-	printf("Temp: %.1f\n", dht22_measurement.temperature);
-	printf("Hum:  %.1f%%\n", dht22_measurement.humidity);
-	sprintf((char*) display.first_line, "Temp: %.1f%cC", dht22_measurement.temperature, DEGREE_SYMBOL);
-	sprintf((char*) display.second_line, "Hum:  %.1f%%", dht22_measurement.humidity);
-	lcd_display(&display);
-	HAL_Delay(1000);
-
-	pressure = readPressureMillibars();
-	temp = readTemperatureC();
-	sprintf((char*) display.first_line, "Temp: %.1f%cC", temp, DEGREE_SYMBOL);
-	sprintf((char*) display.second_line, "Pres: %.2fhPa", pressure);
-	lcd_display(&display);
-	HAL_Delay(1000);
-
-	p0 = pressureToRelativePressure(temp + 273.15f, pressure);
-	sprintf((char*) display.first_line, "Altitude: %.1f", pressureToAltitudeMeters(temp + 273.15f, pressure, 1000));
-	sprintf((char*) display.second_line, "p0 = %.2f hPa", p0);
-	lcd_display(&display);
-	HAL_Delay(1000);
-}
 /* USER CODE END 0 */
 
 /**
@@ -141,7 +86,6 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -264,6 +208,64 @@ void delay_us(uint32_t us)
 {
 	__HAL_TIM_SET_COUNTER(&htim6, 0);
 	while (__HAL_TIM_GET_COUNTER(&htim6) < us);
+}
+
+int __io_putchar(int ch)
+{
+	if (ch == '\n') {
+		uint8_t ch2 = '\r';
+		HAL_UART_Transmit(&huart2, &ch2, 1, HAL_MAX_DELAY);
+	}
+
+	HAL_UART_Transmit(&huart2, (uint8_t*) &ch, 1, HAL_MAX_DELAY);
+	return 1;
+}
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	if (GPIO_Pin == B1_Pin)
+		blink = 1;
+	else
+		blink = 0;
+}
+
+void on_start_animation(void)
+{
+	sprintf((char*) display.first_line, "Enviromental monitor");
+	lcd_display(&display);
+	HAL_Delay(1000);
+	sprintf((char*) display.first_line, "       %c%c", DEGREE_SYMBOL, DEGREE_SYMBOL);
+	sprintf((char*) display.second_line, " ");
+	lcd_display(&display);
+	HAL_Delay(500);
+	sprintf((char*) display.first_line, " ");
+	sprintf((char*) display.second_line, "       %c%c", DEGREE_SYMBOL, DEGREE_SYMBOL);
+	lcd_display(&display);
+	HAL_Delay(500);
+}
+
+void measurement_system_on(void)
+{
+	dht22_measurement = DHT22_ReadMeasurement();
+	printf("Temp: %.1f\n", dht22_measurement.temperature);
+	printf("Hum:  %.1f%%\n", dht22_measurement.humidity);
+	sprintf((char*) display.first_line, "Temp: %.1f%cC", dht22_measurement.temperature, DEGREE_SYMBOL);
+	sprintf((char*) display.second_line, "Hum:  %.1f%%", dht22_measurement.humidity);
+	lcd_display(&display);
+	HAL_Delay(1000);
+
+	pressure = readPressureMillibars();
+	temp = readTemperatureC();
+	sprintf((char*) display.first_line, "Temp: %.1f%cC", temp, DEGREE_SYMBOL);
+	sprintf((char*) display.second_line, "Pres: %.2fhPa", pressure);
+	lcd_display(&display);
+	HAL_Delay(1000);
+
+	p0 = pressureToRelativePressure(temp + 273.15f, pressure);
+	sprintf((char*) display.first_line, "Altitude: %.1f", pressureToAltitudeMeters(temp + 273.15f, pressure, 1000));
+	sprintf((char*) display.second_line, "p0 = %.2f hPa", p0);
+	lcd_display(&display);
+	HAL_Delay(1000);
 }
 /* USER CODE END 4 */
 

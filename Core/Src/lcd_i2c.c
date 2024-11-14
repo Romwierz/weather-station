@@ -7,6 +7,55 @@
 
 #include "lcd_i2c.h"
 
+#define RS_PIN	0x01
+#define RW_PIN	0x02
+#define EN_PIN	0x04
+#define A_PIN	0x08
+#define BL_PIN	A_PIN
+
+#define BF_PIN 0x80
+
+#define SET_8BIT_MODE 0x03
+#define SET_4BIT_MODE 0x02
+
+#define LINE_1_START	0x00
+#define LINE_2_START	0x40
+
+/*
+ * Write instructions
+ */
+#define CLEAR_DISPLAY 			0x01
+#define RETURN_HOME 			0x02
+#define ENTRY_MODE_SET 			0x04
+#define DISPLAY_ON_OFF_CONTROL 	0x08
+#define CURSOR_OR_DISPLAY_SHIFT 0x10
+#define FUNCTION_SET 			0x20
+#define SET_CGRAM_ADDRESS 		0x40
+#define SET_DDRAM_ADDRESS 		0x80
+
+/*
+ * Bits in write instructions
+ */
+#define S_BIT	0x01
+#define ID_BIT	0x02
+#define B_BIT	0x01
+#define C_BIT	0x02
+#define D_BIT	0x04
+#define RL_BIT	0x04
+#define SC_BIT	0x08
+#define F_BIT 	0x04
+#define N_BIT 	0x08
+#define DL_BIT 	0x10
+
+/*
+ * Commands
+ */
+#define DISPLAY_ON 	(DISPLAY_ON_OFF_CONTROL | D_BIT)
+#define DISPLAY_OFF DISPLAY_ON_OFF_CONTROL
+
+#define SHIFT_DISPLAY_TO_THE_LEFT	(CURSOR_OR_DISPLAY_SHIFT | SC_BIT)
+#define SHIFT_DISPLAY_TO_THE_RIGHT	(CURSOR_OR_DISPLAY_SHIFT | SC_BIT | RL_BIT)
+
 static void lcd_write(uint8_t address, uint8_t data, uint8_t xpin);
 
 void lcd_init(lcd_display_t* display)

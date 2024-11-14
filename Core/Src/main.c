@@ -31,6 +31,7 @@
 #include "dht22.h"
 #include "lcd_i2c.h"
 #include "lps25hb_spi.h"
+#include "sh1106_i2c.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -113,40 +114,30 @@ int main(void)
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start(&htim6);
 
-  display.address = PCF8574_ADDRESS;
-  display.backlight = true;
-  lcd_init(&display);
-  on_start_animation();
-  if (!lps25hb_init()) {
-	  sprintf((char*) display.first_line, "Brak czujnika");
-	  sprintf((char*) display.second_line, "cisnienia...");
-	  lcd_display(&display);
-	  while (1);
-  }
-  lps25hb_calib(6);
+  SH1106_Init();
+  SH1106_Fill(SH1106_COLOR_BLACK);
+
+//  uint8_t command = 0xAE;
+//  uint8_t data[128] = {0};
+//  SH1106_WRITE_CMD_SINGLE(command);
+//  command = 0xAF;
+//  HAL_Delay(500);
+//  SH1106_WRITE_CMD_SINGLE(command);
+//  HAL_Delay(500);
+//  SH1106_WRITE_DATA_STREAM(data, sizeof(data));
+//  HAL_Delay(500);
+//  command = 0xAE;
+//  SH1106_WRITE_CMD_SINGLE(command);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  switch (measurement_system_state) {
-		case RUNNING:
-			measurement_system_on();
-			break;
-		case TURN_OFF:
-			lcd_off(&display);
-			lps25hb_deinit();
-			measurement_system_state++;
-			break;
-		case IDLE:
-			// jakiś tryb uśpienia trzasnąć
-			break;
-		default:
-			measurement_system_state = RUNNING;
-			lps25hb_init();
-			break;
-	  }
+	  SH1106_Fill(SH1106_COLOR_WHITE);
+	  HAL_Delay(1000);
+	  SH1106_Fill(SH1106_COLOR_BLACK);
+	  HAL_Delay(2000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

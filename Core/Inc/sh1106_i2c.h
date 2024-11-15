@@ -18,8 +18,10 @@ extern I2C_HandleTypeDef hi2c3;
 #define SH1106_I2C_ADDR		0x78
 //#define SH1106_I2C_ADDR		0x7A
 
-#define SH1106_WIDTH	128
+#define SH1106_WIDTH	132
 #define SH1106_HEIGHT	64
+
+#define SH1106_X_AXIS_OFFSET	2
 
 typedef enum {
     SH1106_COLOR_BLACK = 0x00, /*!< Black color, no pixel */
@@ -41,10 +43,11 @@ typedef enum {
 } SH1106_ControlByte_t;
 
 void SH1106_Init();
-uint8_t SH1106_WriteCmdSingle(const uint8_t *pData);
-uint8_t SH1106_WriteCmdStream(const uint8_t *pData, uint16_t Size);
-uint8_t SH1106_WriteDataSingle(const uint8_t *pData);
-uint8_t SH1106_WriteDataStream(const uint8_t *pData, uint16_t Size);
+uint8_t SH1106_Write(SH1106_ControlByte_t ctrl_byte, const uint8_t *pData, uint16_t Size);
+void SH1106_UpdateScreen();
+void SH1106_DrawPixel(uint16_t x, uint16_t y, SH1106_Color_t color);
 void SH1106_Fill(SH1106_Color_t color);
+void SH1106_FillWithLines(void);
+void SH1106_SetXY(uint16_t x, uint16_t y);
 
 #endif /* INC_SH1106_I2C_H_ */

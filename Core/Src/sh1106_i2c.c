@@ -34,9 +34,14 @@
 #define COMMON_PADS_HARDWARE_CONF_SET 	0xDA
 #define VCOM_DESELECT_LEVEL_MODE_SET 	0xDB
 
-/* 1 extra byte is control byte*/
-static uint8_t SH1106_CommandBuffer[(SH1106_WIDTH * SH1106_HEIGHT / 8) + 1];
-static uint8_t SH1106_DataBuffer[(SH1106_WIDTH * SH1106_HEIGHT / 8) + 1];
+static uint8_t SH1106_DataBuffer[SH1106_WIDTH * SH1106_HEIGHT / 8];
+
+typedef struct {
+    uint16_t CurrentX;
+    uint16_t CurrentY;
+} SH1106_t;
+
+static SH1106_t SH1106;
 
 static const uint8_t SH1106_Init_Buffer[26] = {
 		DISPLAY_OFF,
@@ -62,88 +67,68 @@ static const uint8_t SH1106_Init_Buffer[26] = {
 
 void SH1106_Init()
 {
-//	HAL_I2C_Master_Transmit(&HI2C_SH1106, SH1106_I2C_ADDR,
-//			(uint8_t*) &SH1106_Init_Buffer, sizeof(SH1106_Init_Buffer), 100);
-	SH1106_WriteCmdStream(SH1106_Init_Buffer, sizeof(SH1106_Init_Buffer));
+	SH1106_Write(SH1106_CMD_STREAM, SH1106_Init_Buffer, sizeof(SH1106_Init_Buffer));
+
+	SH1106_Fill(SH1106_COLOR_BLACK);
 
 	HAL_Delay(5);
 }
 
-uint8_t SH1106_WriteCmdSingle(const uint8_t *pData)
+uint8_t SH1106_Write(SH1106_ControlByte_t ctrl_byte, const uint8_t *pData, uint16_t Size)
 {
-	SH1106_CommandBuffer[0] = SH1106_CMD_SINGLE;
-	SH1106_CommandBuffer[1] = *pData;
-	HAL_I2C_Master_Transmit(&HI2C_SH1106, SH1106_I2C_ADDR,
-					(uint8_t*) &SH1106_CommandBuffer, sizeof(SH1106_CommandBuffer), 100);
-	return 0;
-}
-
-uint8_t SH1106_WriteCmdStream(const uint8_t *pData, uint16_t Size)
-{
-	if (Size > sizeof(SH1106_CommandBuffer)) {
+	if (Size > SH1106_WIDTH) {
 		return -1;
 	}
 
-	SH1106_CommandBuffer[0] = SH1106_CMD_STREAM;
-	for (uint16_t i = 0; i < Size; i++) {
-		SH1106_CommandBuffer[i + 1] = *(pData + i);
-	}
-
-	HAL_I2C_Master_Transmit(&HI2C_SH1106, SH1106_I2C_ADDR,
-			(uint8_t*) &SH1106_CommandBuffer, Size + 1, 100);
-
-//	HAL_I2C_Mem_Write(&HI2C_SH1106, SH1106_I2C_ADDR, SH1106_CMD_STREAM, 1,
-//			(uint8_t*) &SH1106_CommandBuffer, Size, 100);
+	HAL_I2C_Mem_Write(&HI2C_SH1106, SH1106_I2C_ADDR, ctrl_byte, 1,
+			(uint8_t*)pData, Size, 100);
 
 	HAL_Delay(5);
 	return 0;
 }
 
-uint8_t SH1106_WriteDataSingle(const uint8_t *pData)
+void SH1106_UpdateScreen()
 {
-	SH1106_DataBuffer[0] = SH1106_DATA_SINGLE;
-	SH1106_DataBuffer[1] = *pData;
-	HAL_I2C_Master_Transmit(&HI2C_SH1106, SH1106_I2C_ADDR,
-					(uint8_t*) &SH1106_DataBuffer, sizeof(SH1106_DataBuffer), 100);
-	return 0;
+	uint8_t commands[3] = {
+		SET_PAGE_ADDRESS,
+		SET_COLUMN_ADDR_LOW_BITS,
+		SET_COLUMN_ADDR_HIGH_BITS,
+	};
+
+	for (uint8_t page = 0; page < 8; page++) {
+		commands[0] = SET_PAGE_ADDRESS + page;
+		SH1106_Write(SH1106_CMD_STREAM, commands, sizeof(commands));
+		SH1106_Write(SH1106_DATA_STREAM, &SH1106_DataBuffer[SH1106_WIDTH * page], SH1106_WIDTH);
+	}
 }
 
-uint8_t SH1106_WriteDataStream(const uint8_t *pData, uint16_t Size)
+/* Screen offset not handled */
+void SH1106_DrawPixel(uint16_t x, uint16_t y, SH1106_Color_t color)
 {
-	if (Size > sizeof(SH1106_DataBuffer)) {
-		return -1;
+	if (x >= SH1106_WIDTH ||
+		y >= SH1106_HEIGHT) {
+		return;
 	}
 
-	SH1106_DataBuffer[0] = SH1106_DATA_STREAM;
-	for (uint16_t i = 0; i < Size; i++) {
-		SH1106_DataBuffer[i + 1] = *(pData + i);
+	if (color == SH1106_COLOR_WHITE) {
+		SH1106_DataBuffer[x + ((y / 8) * SH1106_WIDTH)] |= 1 << (y % 8);
+	} else {
+		SH1106_DataBuffer[x + ((y / 8) * SH1106_WIDTH)] &= ~(1 << (y % 8));
 	}
-
-	HAL_I2C_Master_Transmit(&HI2C_SH1106, SH1106_I2C_ADDR,
-			(uint8_t*) &SH1106_DataBuffer, Size + 1, 100);
-
-	HAL_Delay(5);
-	return 0;
 }
 
 void SH1106_Fill(SH1106_Color_t color)
 {
-	uint8_t commands[3] = {
-			SET_PAGE_ADDRESS,
-			SET_COLUMN_ADDR_LOW_BITS,
-			SET_COLUMN_ADDR_HIGH_BITS,
-	};
+    memset(SH1106_DataBuffer, (color == SH1106_COLOR_BLACK) ? 0x00 : 0xFF, sizeof(SH1106_DataBuffer));
+}
 
-	uint8_t fill[(SH1106_WIDTH * SH1106_HEIGHT / 16)];
+void SH1106_FillWithLines(void)
+{
+	memset(SH1106_DataBuffer, 0x0F, sizeof(SH1106_DataBuffer));
+}
 
-//    memset(SH1106_DataBuffer, SH1106_DATA_STREAM, 1);
-    memset(fill, (color == SH1106_COLOR_BLACK) ? 0x00 : 0xFF, sizeof(fill));
-
-    for (uint8_t page = 0; page < 8; page++) {
-    	commands[0] = SET_PAGE_ADDRESS + page;
-    	SH1106_WriteCmdStream(commands, sizeof(commands));
-//    	HAL_I2C_Master_Transmit(&HI2C_SH1106, SH1106_I2C_ADDR, (uint8_t*)(&SH1106_DataBuffer + page),
-//    	    					sizeof(SH1106_DataBuffer) / 8, 100);
-    	SH1106_WriteDataStream(fill, sizeof(fill));
-	}
+void SH1106_SetXY(uint16_t x, uint16_t y)
+{
+	SH1106.CurrentX = x;
+	SH1106.CurrentY = y;
 }

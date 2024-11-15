@@ -116,6 +116,7 @@ int main(void)
 
   SH1106_Init();
   SH1106_Fill(SH1106_COLOR_BLACK);
+  SH1106_UpdateScreen();
 
 //  uint8_t command = 0xAE;
 //  uint8_t data[128] = {0};
@@ -135,9 +136,26 @@ int main(void)
   while (1)
   {
 	  SH1106_Fill(SH1106_COLOR_WHITE);
+	  SH1106_UpdateScreen();
 	  HAL_Delay(1000);
 	  SH1106_Fill(SH1106_COLOR_BLACK);
-	  HAL_Delay(2000);
+	  SH1106_UpdateScreen();
+	  HAL_Delay(1000);
+	  SH1106_DrawPixel(2, 0, SH1106_COLOR_WHITE);
+	  SH1106_DrawPixel(3, 0, SH1106_COLOR_WHITE);
+	  SH1106_DrawPixel(4, 0, SH1106_COLOR_WHITE);
+	  SH1106_DrawPixel(5, 0, SH1106_COLOR_WHITE);
+	  SH1106_DrawPixel(6, 0, SH1106_COLOR_WHITE);
+	  SH1106_DrawPixel(2, 4, SH1106_COLOR_WHITE);
+	  SH1106_DrawPixel(3, 4, SH1106_COLOR_WHITE);
+	  SH1106_DrawPixel(4, 4, SH1106_COLOR_WHITE);
+	  SH1106_DrawPixel(5, 4, SH1106_COLOR_WHITE);
+	  SH1106_DrawPixel(6, 4, SH1106_COLOR_WHITE);
+	  SH1106_UpdateScreen();
+	  HAL_Delay(1000);
+	  SH1106_FillWithLines();
+	  SH1106_UpdateScreen();
+	  HAL_Delay(1000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

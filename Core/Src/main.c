@@ -116,19 +116,27 @@ int main(void)
 
   SH1106_Init();
   SH1106_Fill(SH1106_COLOR_BLACK);
-  SH1106_UpdateScreen();
+  SH1106_SetXY(2, 0);
+  SH1106_Putc('a', Font_7x10, SH1106_COLOR_WHITE);
+  SH1106_Putc('b', Font_7x10, SH1106_COLOR_WHITE);
+  SH1106_Putc('c', Font_7x10, SH1106_COLOR_WHITE);
+  SH1106_SetXY(2, 10);
+  SH1106_Putc('a', Font_11x18, SH1106_COLOR_WHITE);
+  SH1106_Putc('b', Font_11x18, SH1106_COLOR_WHITE);
+  SH1106_Putc('c', Font_11x18, SH1106_COLOR_WHITE);
 
-//  uint8_t command = 0xAE;
-//  uint8_t data[128] = {0};
-//  SH1106_WRITE_CMD_SINGLE(command);
-//  command = 0xAF;
-//  HAL_Delay(500);
-//  SH1106_WRITE_CMD_SINGLE(command);
-//  HAL_Delay(500);
-//  SH1106_WRITE_DATA_STREAM(data, sizeof(data));
-//  HAL_Delay(500);
-//  command = 0xAE;
-//  SH1106_WRITE_CMD_SINGLE(command);
+  SH1106_SetXY(2, 28);
+  SH1106_Putc('X', Font_11x18, SH1106_COLOR_WHITE);
+  SH1106_SetXY(3, 46);
+  SH1106_Putc('X', Font_11x18, SH1106_COLOR_WHITE);
+
+  SH1106_SetXY(119, 28);
+  SH1106_Putc('X', Font_11x18, SH1106_COLOR_WHITE);
+  SH1106_SetXY(118, 46);
+  SH1106_Putc('X', Font_11x18, SH1106_COLOR_WHITE);
+
+  SH1106_UpdateScreen();
+  HAL_Delay(2000);
   /* USER CODE END 2 */
 
   /* Infinite loop */

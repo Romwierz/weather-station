@@ -11,6 +11,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "i2c.h"
+#include "fonts.h"
 
 extern I2C_HandleTypeDef hi2c3;
 #define HI2C_SH1106 hi2c3
@@ -18,9 +19,8 @@ extern I2C_HandleTypeDef hi2c3;
 #define SH1106_I2C_ADDR		0x78
 //#define SH1106_I2C_ADDR		0x7A
 
-#define SH1106_WIDTH	132
-#define SH1106_HEIGHT	64
-
+#define SH1106_WIDTH			132
+#define SH1106_HEIGHT			64
 #define SH1106_X_AXIS_OFFSET	2
 
 typedef enum {
@@ -46,6 +46,7 @@ void SH1106_Init();
 uint8_t SH1106_Write(SH1106_ControlByte_t ctrl_byte, const uint8_t *pData, uint16_t Size);
 void SH1106_UpdateScreen();
 void SH1106_DrawPixel(uint16_t x, uint16_t y, SH1106_Color_t color);
+void SH1106_Putc(char ch, SH1106_Font_t font, SH1106_Color_t color);
 void SH1106_Fill(SH1106_Color_t color);
 void SH1106_FillWithLines(void);
 void SH1106_SetXY(uint16_t x, uint16_t y);

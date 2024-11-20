@@ -142,6 +142,37 @@ void SH1106_Putc(char ch, SH1106_Font_t font, SH1106_Color_t color)
 	SH1106.CurrentX += font.width;
 }
 
+void SH1106_PutCustomSymbol(SH1106_CustomSymbol_t symbol, SH1106_Font_t font, SH1106_Color_t color)
+{
+	if ((SH1106.CurrentX + font.width) > SH1106_WIDTH ||
+		 SH1106.CurrentY + font.height > SH1106_HEIGHT) {
+		return;
+	}
+
+	for (uint8_t py = 0; py < font.height; py++) {
+		uint16_t data = font.data[symbol * font.height + py];
+		for (uint8_t px = 0; px < font.width; px++) {
+			if ((data << px) & 0x8000) {
+				SH1106_DrawPixel(SH1106.CurrentX + px, SH1106.CurrentY + py,
+						color);
+			} else {
+				SH1106_DrawPixel(SH1106.CurrentX + px, SH1106.CurrentY + py,
+						!color);
+			}
+		}
+	}
+
+	SH1106.CurrentX += font.width;
+}
+
+void SH1106_Puts(char *str, SH1106_Font_t font, SH1106_Color_t color)
+{
+	while (*str) {
+		SH1106_Putc(*str, font, color);
+		str++;
+	}
+}
+
 void SH1106_Fill(SH1106_Color_t color)
 {
     memset(SH1106_DataBuffer, (color == SH1106_COLOR_BLACK) ? 0x00 : 0xFF, sizeof(SH1106_DataBuffer));
@@ -152,7 +183,7 @@ void SH1106_FillWithLines(void)
 	memset(SH1106_DataBuffer, 0x0F, sizeof(SH1106_DataBuffer));
 }
 
-void SH1106_SetXY(uint16_t x, uint16_t y)
+void SH1106_GotoXY(uint16_t x, uint16_t y)
 {
 	SH1106.CurrentX = x;
 	SH1106.CurrentY = y;

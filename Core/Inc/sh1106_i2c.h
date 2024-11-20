@@ -47,8 +47,10 @@ uint8_t SH1106_Write(SH1106_ControlByte_t ctrl_byte, const uint8_t *pData, uint1
 void SH1106_UpdateScreen();
 void SH1106_DrawPixel(uint16_t x, uint16_t y, SH1106_Color_t color);
 void SH1106_Putc(char ch, SH1106_Font_t font, SH1106_Color_t color);
+void SH1106_Puts(char *str, SH1106_Font_t font, SH1106_Color_t color);
+void SH1106_PutCustomSymbol(SH1106_CustomSymbol_t symbol, SH1106_Font_t font, SH1106_Color_t color);
 void SH1106_Fill(SH1106_Color_t color);
 void SH1106_FillWithLines(void);
-void SH1106_SetXY(uint16_t x, uint16_t y);
+void SH1106_GotoXY(uint16_t x, uint16_t y);
 
 #endif /* INC_SH1106_I2C_H_ */

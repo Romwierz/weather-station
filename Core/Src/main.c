@@ -116,54 +116,23 @@ int main(void)
 
   SH1106_Init();
   SH1106_Fill(SH1106_COLOR_BLACK);
-  SH1106_SetXY(2, 0);
-  SH1106_Putc('a', Font_7x10, SH1106_COLOR_WHITE);
-  SH1106_Putc('b', Font_7x10, SH1106_COLOR_WHITE);
-  SH1106_Putc('c', Font_7x10, SH1106_COLOR_WHITE);
-  SH1106_SetXY(2, 10);
-  SH1106_Putc('a', Font_11x18, SH1106_COLOR_WHITE);
-  SH1106_Putc('b', Font_11x18, SH1106_COLOR_WHITE);
-  SH1106_Putc('c', Font_11x18, SH1106_COLOR_WHITE);
-
-  SH1106_SetXY(2, 28);
-  SH1106_Putc('X', Font_11x18, SH1106_COLOR_WHITE);
-  SH1106_SetXY(3, 46);
-  SH1106_Putc('X', Font_11x18, SH1106_COLOR_WHITE);
-
-  SH1106_SetXY(119, 28);
-  SH1106_Putc('X', Font_11x18, SH1106_COLOR_WHITE);
-  SH1106_SetXY(118, 46);
-  SH1106_Putc('X', Font_11x18, SH1106_COLOR_WHITE);
-
   SH1106_UpdateScreen();
-  HAL_Delay(2000);
+
+  if (!lps25hb_init()) {
+	  SH1106_GotoXY(2, 0);
+	  SH1106_Puts("Brak czujnika cisnienia! ", Font_7x10, SH1106_COLOR_WHITE);
+	  while (1);
+  }
+  lps25hb_calib(6);
+
+  HAL_Delay(1000);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  SH1106_Fill(SH1106_COLOR_WHITE);
-	  SH1106_UpdateScreen();
-	  HAL_Delay(1000);
-	  SH1106_Fill(SH1106_COLOR_BLACK);
-	  SH1106_UpdateScreen();
-	  HAL_Delay(1000);
-	  SH1106_DrawPixel(2, 0, SH1106_COLOR_WHITE);
-	  SH1106_DrawPixel(3, 0, SH1106_COLOR_WHITE);
-	  SH1106_DrawPixel(4, 0, SH1106_COLOR_WHITE);
-	  SH1106_DrawPixel(5, 0, SH1106_COLOR_WHITE);
-	  SH1106_DrawPixel(6, 0, SH1106_COLOR_WHITE);
-	  SH1106_DrawPixel(2, 4, SH1106_COLOR_WHITE);
-	  SH1106_DrawPixel(3, 4, SH1106_COLOR_WHITE);
-	  SH1106_DrawPixel(4, 4, SH1106_COLOR_WHITE);
-	  SH1106_DrawPixel(5, 4, SH1106_COLOR_WHITE);
-	  SH1106_DrawPixel(6, 4, SH1106_COLOR_WHITE);
-	  SH1106_UpdateScreen();
-	  HAL_Delay(1000);
-	  SH1106_FillWithLines();
-	  SH1106_UpdateScreen();
-	  HAL_Delay(1000);
+	  measurement_system_on_sh1106();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -283,6 +252,55 @@ void measurement_system_on(void)
 	sprintf((char*) display.second_line, "p0 = %.2f hPa", p0);
 	lcd_display(&display);
 	HAL_Delay(1000);
+}
+
+void measurement_system_on_sh1106(void)
+{
+	char buf[128];
+
+	dht22_measurement = DHT22_ReadMeasurement();
+//	printf("Temp: %.1f\n", dht22_measurement.temperature);
+//	printf("Hum:  %.1f%%\n", dht22_measurement.humidity);
+
+	SH1106_GotoXY(2, 0);
+	SH1106_Puts("Temp: ", Font_11x18, SH1106_COLOR_WHITE);
+	sprintf((char*) buf, "%.1f", dht22_measurement.temperature);
+	SH1106_Puts(buf, Font_11x18, SH1106_COLOR_WHITE);
+	SH1106_PutCustomSymbol(SH1106_DEGREE_SYMBOL, CustomSymbol_11x18, SH1106_COLOR_WHITE);
+
+	SH1106_GotoXY(2, 18);
+	SH1106_Puts("Hum:  ", Font_11x18, SH1106_COLOR_WHITE);
+	sprintf((char*) buf, "%.1f%%", dht22_measurement.humidity);
+	SH1106_Puts(buf, Font_11x18, SH1106_COLOR_WHITE);
+
+	SH1106_UpdateScreen();
+	HAL_Delay(1000);
+
+	pressure = readPressureMillibars();
+	temp = readTemperatureC();
+	SH1106_GotoXY(2, 36);
+	SH1106_Puts("Pres: ", Font_7x10, SH1106_COLOR_WHITE);
+	sprintf((char*) buf, "%.2fhPa", pressure);
+	SH1106_Puts(buf, Font_7x10, SH1106_COLOR_WHITE);
+
+	SH1106_GotoXY(2, 46);
+	p0 = pressureToRelativePressure(temp + 273.15f, pressure);
+	sprintf((char*) buf, "p0:   %.2fhPa", p0);
+	SH1106_Puts(buf, Font_7x10, SH1106_COLOR_WHITE);
+
+	SH1106_UpdateScreen();
+	HAL_Delay(1000);
+//	temp = readTemperatureC();
+//	sprintf((char*) display.first_line, "Temp: %.1f%cC", temp, DEGREE_SYMBOL);
+//	sprintf((char*) display.second_line, "Pres: %.2fhPa", pressure);
+//	lcd_display(&display);
+//	HAL_Delay(1000);
+//
+//	p0 = pressureToRelativePressure(temp + 273.15f, pressure);
+//	sprintf((char*) display.first_line, "Altitude: %.1f", pressureToAltitudeMeters(temp + 273.15f, pressure, 1000));
+//	sprintf((char*) display.second_line, "p0 = %.2f hPa", p0);
+//	lcd_display(&display);
+//	HAL_Delay(1000);
 }
 /* USER CODE END 4 */
 

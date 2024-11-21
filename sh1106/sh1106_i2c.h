@@ -11,7 +11,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "i2c.h"
-#include "fonts.h"
+#include "../fonts/fonts.h"
 
 extern I2C_HandleTypeDef hi2c3;
 #define HI2C_SH1106 hi2c3

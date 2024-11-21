@@ -28,10 +28,10 @@
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
 #include <stdbool.h>
-#include "dht22.h"
-#include "lcd_i2c.h"
-#include "lps25hb_spi.h"
-#include "sh1106_i2c.h"
+#include "../../dht22/dht22.h"
+#include "../../hd44780/lcd_i2c.h"
+#include "../../lps25hb/lps25hb_spi.h"
+#include "../../sh1106/sh1106_i2c.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

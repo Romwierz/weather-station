@@ -5,7 +5,7 @@
  *      Author: miczu
  */
 
-#include "lcd_i2c.h"
+#include "../../hd44780/lcd_i2c.h"
 
 #define RS_PIN	0x01
 #define RW_PIN	0x02

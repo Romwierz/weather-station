@@ -5,9 +5,10 @@
  *      Author: miczu
  */
 
+#include "../../dht22/dht22.h"
+
 #include <stdio.h>
 #include "main.h"
-#include "dht22.h"
 #include "gpio.h"
 #include "tim.h"
 

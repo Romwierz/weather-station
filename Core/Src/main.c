@@ -30,8 +30,7 @@
 #include <stdbool.h>
 #include "dht22.h"
 #include "lps25hb_spi.h"
-#include "hd44780.h"
-#include "sh1106.h"
+#include "display.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -41,8 +40,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define PCF8574_ADDRESS 	0x4E
-#define PCF8574A_ADDRESS 	0x7E
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -57,7 +55,6 @@ DHT22_Measurement_t dht22_measurement;
 float pressure;
 float p0;
 float temp;
-lcd_display_t display;
 volatile enum System_state measurement_system_state;
 int blink;
 
@@ -114,13 +111,11 @@ int main(void)
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start(&htim6);
 
-  SH1106_Init();
-  SH1106_Fill(SH1106_COLOR_BLACK);
-  SH1106_UpdateScreen();
+  display_init();
 
   if (!lps25hb_init()) {
-	  SH1106_GotoXY(2, 0);
-	  SH1106_Puts("Brak czujnika cisnienia! ", Font_7x10, SH1106_COLOR_WHITE);
+	  display_show_error(LPS25HB_ERROR);
+	  display_update();
 	  while (1);
   }
   lps25hb_calib(6);
@@ -215,80 +210,30 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 		blink = 0;
 }
 
-void on_start_animation(void)
-{
-	sprintf((char*) display.first_line, "Enviromental monitor");
-	lcd_display(&display);
-	HAL_Delay(1000);
-	sprintf((char*) display.first_line, "       %c%c", DEGREE_SYMBOL, DEGREE_SYMBOL);
-	sprintf((char*) display.second_line, " ");
-	lcd_display(&display);
-	HAL_Delay(500);
-	sprintf((char*) display.first_line, " ");
-	sprintf((char*) display.second_line, "       %c%c", DEGREE_SYMBOL, DEGREE_SYMBOL);
-	lcd_display(&display);
-	HAL_Delay(500);
-}
-
-void measurement_system_on(void)
-{
-	dht22_measurement = DHT22_ReadMeasurement();
-	printf("Temp: %.1f\n", dht22_measurement.temperature);
-	printf("Hum:  %.1f%%\n", dht22_measurement.humidity);
-	sprintf((char*) display.first_line, "Temp: %.1f%cC", dht22_measurement.temperature, DEGREE_SYMBOL);
-	sprintf((char*) display.second_line, "Hum:  %.1f%%", dht22_measurement.humidity);
-	lcd_display(&display);
-	HAL_Delay(1000);
-
-	pressure = readPressureMillibars();
-	temp = readTemperatureC();
-	sprintf((char*) display.first_line, "Temp: %.1f%cC", temp, DEGREE_SYMBOL);
-	sprintf((char*) display.second_line, "Pres: %.2fhPa", pressure);
-	lcd_display(&display);
-	HAL_Delay(1000);
-
-	p0 = pressureToRelativePressure(temp + 273.15f, pressure);
-	sprintf((char*) display.first_line, "Altitude: %.1f", pressureToAltitudeMeters(temp + 273.15f, pressure, 1000));
-	sprintf((char*) display.second_line, "p0 = %.2f hPa", p0);
-	lcd_display(&display);
-	HAL_Delay(1000);
-}
-
 void measurement_system_on_sh1106(void)
 {
-	char buf[128];
-
 	dht22_measurement = DHT22_ReadMeasurement();
-//	printf("Temp: %.1f\n", dht22_measurement.temperature);
-//	printf("Hum:  %.1f%%\n", dht22_measurement.humidity);
 
-	SH1106_GotoXY(2, 0);
-	SH1106_Puts("Temp: ", Font_11x18, SH1106_COLOR_WHITE);
-	sprintf((char*) buf, "%.1f", dht22_measurement.temperature);
-	SH1106_Puts(buf, Font_11x18, SH1106_COLOR_WHITE);
-	SH1106_PutCustomSymbol(SH1106_DEGREE_SYMBOL, CustomSymbol_11x18, SH1106_COLOR_WHITE);
+	display_goto_xy(2, 0);
+	display_show_temperature(Font_11x18, dht22_measurement.temperature);
 
-	SH1106_GotoXY(2, 18);
-	SH1106_Puts("Hum:  ", Font_11x18, SH1106_COLOR_WHITE);
-	sprintf((char*) buf, "%.1f%%", dht22_measurement.humidity);
-	SH1106_Puts(buf, Font_11x18, SH1106_COLOR_WHITE);
+	display_goto_xy(2, 18);
+	display_show_humidity(Font_11x18, dht22_measurement.humidity);
 
-	SH1106_UpdateScreen();
+	display_update();
 	HAL_Delay(1000);
 
 	pressure = readPressureMillibars();
 	temp = readTemperatureC();
-	SH1106_GotoXY(2, 36);
-	SH1106_Puts("Pres: ", Font_7x10, SH1106_COLOR_WHITE);
-	sprintf((char*) buf, "%.2fhPa", pressure);
-	SH1106_Puts(buf, Font_7x10, SH1106_COLOR_WHITE);
-
-	SH1106_GotoXY(2, 46);
 	p0 = pressureToRelativePressure(temp + 273.15f, pressure);
-	sprintf((char*) buf, "p0:   %.2fhPa", p0);
-	SH1106_Puts(buf, Font_7x10, SH1106_COLOR_WHITE);
 
-	SH1106_UpdateScreen();
+	display_goto_xy(2, 36);
+	display_show_pressure(Font_7x10, pressure);
+
+	display_goto_xy(2, 46);
+	display_show_relative_pressure(Font_7x10, p0);
+
+	display_update();
 	HAL_Delay(1000);
 }
 /* USER CODE END 4 */

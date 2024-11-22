@@ -15,6 +15,9 @@
 extern I2C_HandleTypeDef hi2c3;
 #define HI2C_LCD hi2c3
 
+#define PCF8574_ADDRESS 	0x4E
+#define PCF8574A_ADDRESS 	0x7E
+
 /*
  * PCF8574P <-> HD44780
  *

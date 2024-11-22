@@ -17,6 +17,13 @@ void display_init(void)
 	display_update();
 }
 
+void display_off(void)
+{
+	// add sh1106 deinit
+	SH1106_Fill(SH1106_COLOR_BLACK);
+	display_update();
+}
+
 void display_update(void)
 {
 	SH1106_UpdateScreen();

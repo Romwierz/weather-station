@@ -15,6 +15,7 @@ typedef enum {
 } Error_t;
 
 void display_init(void);
+void display_off(void);
 void display_update(void);
 
 void display_goto_xy(uint16_t x, uint16_t y);

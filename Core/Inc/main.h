@@ -82,9 +82,6 @@ void Error_Handler(void);
 
 /* USER CODE BEGIN Private defines */
 void delay_us(uint32_t us);
-void on_start_animation(void);
-void measurement_system_on(void);
-void measurement_system_on_sh1106(void);
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

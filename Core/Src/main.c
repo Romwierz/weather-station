@@ -28,9 +28,7 @@
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
 #include <stdbool.h>
-#include "dht22.h"
-#include "lps25hb.h"
-#include "display.h"
+#include "measurement_system.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -51,18 +49,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-DHT22_Measurement_t dht22_measurement;
-float pressure;
-float p0;
-float temp;
-volatile enum System_state measurement_system_state;
-int blink;
+//extern volatile enum System_state measurement_system_state;
 
-enum System_state {
-  RUNNING,
-  TURN_OFF,
-  IDLE
-};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -111,14 +99,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start(&htim6);
 
-  display_init();
-
-  if (!lps25hb_init()) {
-	  display_show_error(LPS25HB_ERROR);
-	  display_update();
-	  while (1);
-  }
-  lps25hb_calib(6);
+  measurement_system_init();
 
   HAL_Delay(1000);
   /* USER CODE END 2 */
@@ -127,7 +108,8 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  measurement_system_on_sh1106();
+	  measurement_system();
+	  HAL_Delay(1000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -205,37 +187,9 @@ int __io_putchar(int ch)
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	if (GPIO_Pin == B1_Pin)
-		blink = 1;
-	else
-		blink = 0;
+		measurement_system_state++;
 }
 
-void measurement_system_on_sh1106(void)
-{
-	dht22_measurement = DHT22_ReadMeasurement();
-
-	display_goto_xy(2, 0);
-	display_show_temperature(Font_11x18, dht22_measurement.temperature);
-
-	display_goto_xy(2, 18);
-	display_show_humidity(Font_11x18, dht22_measurement.humidity);
-
-	display_update();
-	HAL_Delay(1000);
-
-	pressure = lps25hb_readPressureMillibars();
-	temp = lps25hb_readTemperatureC();
-	p0 = lps25hb_pressureToRelativePressure(temp + 273.15f, pressure);
-
-	display_goto_xy(2, 36);
-	display_show_pressure(Font_7x10, pressure);
-
-	display_goto_xy(2, 46);
-	display_show_relative_pressure(Font_7x10, p0);
-
-	display_update();
-	HAL_Delay(1000);
-}
 /* USER CODE END 4 */
 
 /**

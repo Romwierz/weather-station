@@ -4,8 +4,7 @@
  *  Created on: Nov 12, 2024
  *      Author: miczu
  */
-#include "../../sh1106/sh1106_i2c.h"
-
+#include <sh1106.h>
 #include <string.h>
 
 /**

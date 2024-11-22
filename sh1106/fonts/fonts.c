@@ -5,7 +5,7 @@
  *      Author: miczu
  */
 
-#include "fonts.h"
+#include <fonts/fonts.h>
 
 static const uint16_t Font7x10 [] = {
 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,  // sp

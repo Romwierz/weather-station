@@ -28,10 +28,10 @@
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
 #include <stdbool.h>
-#include "../../dht22/dht22.h"
-#include "../../hd44780/lcd_i2c.h"
-#include "../../lps25hb/lps25hb_spi.h"
-#include "../../sh1106/sh1106_i2c.h"
+#include "dht22.h"
+#include "lps25hb_spi.h"
+#include "hd44780.h"
+#include "sh1106.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -290,17 +290,6 @@ void measurement_system_on_sh1106(void)
 
 	SH1106_UpdateScreen();
 	HAL_Delay(1000);
-//	temp = readTemperatureC();
-//	sprintf((char*) display.first_line, "Temp: %.1f%cC", temp, DEGREE_SYMBOL);
-//	sprintf((char*) display.second_line, "Pres: %.2fhPa", pressure);
-//	lcd_display(&display);
-//	HAL_Delay(1000);
-//
-//	p0 = pressureToRelativePressure(temp + 273.15f, pressure);
-//	sprintf((char*) display.first_line, "Altitude: %.1f", pressureToAltitudeMeters(temp + 273.15f, pressure, 1000));
-//	sprintf((char*) display.second_line, "p0 = %.2f hPa", p0);
-//	lcd_display(&display);
-//	HAL_Delay(1000);
 }
 /* USER CODE END 4 */
 

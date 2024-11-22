@@ -4,8 +4,8 @@
  *  Created on: Sep 18, 2024
  *      Author: miczu
  */
+#include <lps25hb.h>
 #include <math.h>
-#include "lps25hb_spi.h"
 #include "stm32l4xx_hal.h"
 #include "gpio.h"
 
@@ -88,12 +88,12 @@ static int32_t readPressureRaw(void)
 	return pressure_raw;
 }
 
-float readPressureMillibars(void)
+float lps25hb_readPressureMillibars(void)
 {
 	return (float)readPressureRaw() / 4096.0f;
 }
 
-float pressureToRelativePressure(float temp, float p)
+float lps25hb_pressureToRelativePressure(float temp, float p)
 {
 	const float h = 80; // nasza wysokość n.p.m.
 
@@ -114,12 +114,12 @@ static int16_t readTemperatureRaw(void)
 	return (int16_t)(rx_data[2] << 8 | rx_data[1]);
 }
 
-float readTemperatureC(void)
+float lps25hb_readTemperatureC(void)
 {
 	return 42.5f + (float)readTemperatureRaw() / 480.0f;
 }
 
-float readTemperatureK(void)
+float lps25hb_readTemperatureK(void)
 {
 	return 273.15f + 42.5f + (float)readTemperatureRaw() / 480.0f;
 }
@@ -128,7 +128,7 @@ float readTemperatureK(void)
  * @param temp is in Kelvin units
  * @param p0 must be taken from a weather forecast
  */
-float pressureToAltitudeMeters(float temp, float p, float p0)
+float lps25hb_pressureToAltitudeMeters(float temp, float p, float p0)
 {
   return -29.271769f * temp * log(p / p0);
 }

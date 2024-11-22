@@ -29,7 +29,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "dht22.h"
-#include "lps25hb_spi.h"
+#include "lps25hb.h"
 #include "display.h"
 /* USER CODE END Includes */
 
@@ -223,9 +223,9 @@ void measurement_system_on_sh1106(void)
 	display_update();
 	HAL_Delay(1000);
 
-	pressure = readPressureMillibars();
-	temp = readTemperatureC();
-	p0 = pressureToRelativePressure(temp + 273.15f, pressure);
+	pressure = lps25hb_readPressureMillibars();
+	temp = lps25hb_readTemperatureC();
+	p0 = lps25hb_pressureToRelativePressure(temp + 273.15f, pressure);
 
 	display_goto_xy(2, 36);
 	display_show_pressure(Font_7x10, pressure);

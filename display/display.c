@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include "display.h"
 
-char SH1106_LineBuf[128];
+static char SH1106_LineBuf[128];
 
 void display_init(void)
 {

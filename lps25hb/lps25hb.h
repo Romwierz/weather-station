@@ -58,11 +58,11 @@
 
 bool lps25hb_init(void);
 void lps25hb_deinit(void);
-float readPressureMillibars(void);
-float pressureToRelativePressure(float temp, float p);
-float readTemperatureC(void);
-float readTemperatureK(void);
-float pressureToAltitudeMeters(float temp, float p, float p0);
+float lps25hb_readPressureMillibars(void);
+float lps25hb_pressureToRelativePressure(float temp, float p);
+float lps25hb_readTemperatureC(void);
+float lps25hb_readTemperatureK(void);
+float lps25hb_pressureToAltitudeMeters(float temp, float p, float p0);
 void lps25hb_calib(uint16_t value);
 void lps25hb_test(void);
 

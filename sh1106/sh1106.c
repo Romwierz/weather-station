@@ -70,8 +70,6 @@ void SH1106_Init()
 	SH1106_Write(SH1106_CMD_STREAM, SH1106_Init_Buffer, sizeof(SH1106_Init_Buffer));
 
 	SH1106_Fill(SH1106_COLOR_BLACK);
-
-	HAL_Delay(5);
 }
 
 uint8_t SH1106_Write(SH1106_ControlByte_t ctrl_byte, const uint8_t *pData, uint16_t Size)
@@ -83,7 +81,6 @@ uint8_t SH1106_Write(SH1106_ControlByte_t ctrl_byte, const uint8_t *pData, uint1
 	HAL_I2C_Mem_Write(&HI2C_SH1106, SH1106_I2C_ADDR, ctrl_byte, 1,
 			(uint8_t*)pData, Size, 100);
 
-	HAL_Delay(5);
 	return 0;
 }
 

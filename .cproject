@@ -55,6 +55,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/hd44780}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/sh1106}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/sh1106/fonts}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/wifi_module}&quot;"/>
 									<listOptionValue builtIn="false" value="../Drivers/STM32L4xx_HAL_Driver/Inc"/>
 									<listOptionValue builtIn="false" value="../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy"/>
 									<listOptionValue builtIn="false" value="../Drivers/CMSIS/Device/ST/STM32L4xx/Include"/>
@@ -86,14 +87,15 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="dht22"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="sh1106"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="display"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="hd44780"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="dht22"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="lps25hb"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="measurement_system"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="sh1106"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="wifi_module"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -172,13 +174,14 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="dht22"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="sh1106"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="display"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="hd44780"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="dht22"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="lps25hb"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="sh1106"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="wifi_module"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

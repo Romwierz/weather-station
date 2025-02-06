@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "measurement_system.h"
+#include "wifi_module.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -102,7 +103,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start(&htim6);
 
-  measurement_system_init();
+//  measurement_system_init();
 
   HAL_Delay(1000);
   /* USER CODE END 2 */
@@ -111,7 +112,11 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  measurement_system();
+//	  measurement_system();
+	  if (wifiDataReq) {
+		  readWiFiWeatherData();
+		  wifiDataReq = false;
+	}
 	  HAL_Delay(1000);
     /* USER CODE END WHILE */
 
@@ -189,8 +194,10 @@ int __io_putchar(int ch)
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-	if (GPIO_Pin == B1_Pin)
-		measurement_system_state++;
+	if (GPIO_Pin == B1_Pin){
+//		measurement_system_state++;
+		wifiDataReq = true;
+	}
 }
 
 /* USER CODE END 4 */

@@ -79,6 +79,8 @@ void Error_Handler(void);
 #define EXT_BTN_EXTI_IRQn EXTI15_10_IRQn
 #define SWO_Pin GPIO_PIN_3
 #define SWO_GPIO_Port GPIOB
+#define ESP8266_REQ_Pin GPIO_PIN_8
+#define ESP8266_REQ_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 void delay_us(uint32_t us);

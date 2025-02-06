@@ -59,6 +59,9 @@ void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(CS_LPS25HB_GPIO_Port, CS_LPS25HB_Pin, GPIO_PIN_SET);
 
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(ESP8266_REQ_GPIO_Port, ESP8266_REQ_Pin, GPIO_PIN_RESET);
+
   /*Configure GPIO pins : PCPin PCPin */
   GPIO_InitStruct.Pin = B1_Pin|EXT_BTN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
@@ -79,12 +82,12 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(DHT22_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PtPin */
-  GPIO_InitStruct.Pin = CS_LPS25HB_Pin;
+  /*Configure GPIO pins : PBPin PBPin */
+  GPIO_InitStruct.Pin = CS_LPS25HB_Pin|ESP8266_REQ_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(CS_LPS25HB_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0);

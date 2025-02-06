@@ -57,10 +57,7 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(DHT22_GPIO_Port, DHT22_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(CS_LPS25HB_GPIO_Port, CS_LPS25HB_Pin, GPIO_PIN_SET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(ESP8266_REQ_GPIO_Port, ESP8266_REQ_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, CS_LPS25HB_Pin|ESP8266_REQ_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pins : PCPin PCPin */
   GPIO_InitStruct.Pin = B1_Pin|EXT_BTN_Pin;

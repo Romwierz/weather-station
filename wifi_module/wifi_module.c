@@ -10,24 +10,35 @@
 
 #define SIZE_INFO_LENGTH 3U
 #define DIGIT_ZERO_IN_ASCII_OFFSET 48U
+#define DIGIT_NINE_IN_ASCII_OFFSET 57U
 
 volatile bool wifiDataReq = false;
 
-static int myPow(int base, int exponent)
-{
-    int number = 1;
+static uint8_t myPow(uint8_t base, uint8_t exponent) {
+	uint8_t number = 1;
 
-    for (int i = 0; i < exponent; ++i)
+    for (uint8_t i = 0; i < exponent; ++i)
         number *= base;
 
-    return(number);
+    return number;
 }
 
-static size_t convertCharArrayToNumber(char* srcArray) {
-	size_t number = 0;
-	size_t digit;
-	// must know array size (3 byte)
-	for (size_t i = 0; i < SIZE_INFO_LENGTH; i++) {
+static bool isDigit(uint8_t ch) {
+	if ((ch >= DIGIT_ZERO_IN_ASCII_OFFSET) && (ch <= DIGIT_NINE_IN_ASCII_OFFSET)) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+static uint8_t convertCharArrayToNumber(char* srcArray) {
+	uint8_t number = 0;
+	uint8_t digit;
+	// must know array size (3 bytes)
+	for (uint8_t i = 0; i < SIZE_INFO_LENGTH; i++) {
+		if (!isDigit(*(srcArray + i))) {
+			return 0;
+		}
 		digit = *(srcArray + i) - DIGIT_ZERO_IN_ASCII_OFFSET;
 		// digits are processed from most significant to least
 		number += digit * myPow(10, (SIZE_INFO_LENGTH - 1 - i));

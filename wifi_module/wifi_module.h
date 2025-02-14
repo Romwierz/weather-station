@@ -18,6 +18,9 @@ typedef struct {
 
 extern volatile bool wifiDataReq;
 
-HAL_StatusTypeDef readWiFiWeatherData();
+void esp8266_requestDataSize(void);
+void esp8266_requestData(void);
+void readWiFiWeatherData();
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
 
 #endif /* WIFI_MODULE_H_ */

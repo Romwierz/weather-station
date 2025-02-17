@@ -23,7 +23,9 @@
   }  while(0U)
 
 volatile bool wifiDataReq = false;
-volatile bool dma_tranfer_cplt = false;
+WiFi_WeatherData_t wifiData;
+
+volatile bool dma_transfer_cplt = false;
 static bool data_size_correct = true;
 
 uint32_t tickstart;

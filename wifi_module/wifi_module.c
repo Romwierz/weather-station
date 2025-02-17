@@ -11,6 +11,7 @@
 
 #define SIZE_INFO_LENGTH				3U
 #define DATA_SIZE_MAX					30U
+#define NEGATIVE_SIGN_IN_ASCII_OFFSET	45U
 #define DIGIT_ZERO_IN_ASCII_OFFSET		48U
 #define DIGIT_NINE_IN_ASCII_OFFSET		57U
 
@@ -30,15 +31,23 @@ uint32_t tickstart;
 // volatile?
 char rx_data_size[SIZE_INFO_LENGTH];
 char rx_data[DATA_SIZE_MAX];
-uint8_t data_size;
+uint16_t data_size;
 
-static uint8_t myPow(uint8_t base, uint8_t exponent) {
-	uint8_t number = 1;
+static int16_t myPow(int16_t base, int16_t exponent) {
+	int16_t number = 1;
 
-    for (uint8_t i = 0; i < exponent; ++i)
+    for (int16_t i = 0; i < exponent; ++i)
         number *= base;
 
     return number;
+}
+
+static bool isNegSign(uint8_t ch) {
+	if (ch == NEGATIVE_SIGN_IN_ASCII_OFFSET) {
+		return true;
+	} else {
+		return false;
+	}
 }
 
 static bool isDigit(uint8_t ch) {
@@ -49,17 +58,24 @@ static bool isDigit(uint8_t ch) {
 	}
 }
 
-static uint8_t convertCharArrayToNumber(char* srcArray) {
-	uint8_t number = 0;
-	uint8_t digit;
-	// must know array size (3 bytes)
-	for (uint8_t i = 0; i < SIZE_INFO_LENGTH; i++) {
-		if (!isDigit(*(srcArray + i))) {
+static int16_t convertCharArrayToNumber(char* srcArray, int16_t arraySize) {
+	int16_t number = 0;
+	int16_t digit;
+	int16_t sign = 1;
+
+	for (int16_t i = 0; i < arraySize; i++) {
+		char ch = *(srcArray + i);
+		if (isNegSign(ch)) {
+			sign = -1;
+			continue;
+		}
+		else if (!isDigit(ch)) {
 			return 0;
 		}
-		digit = *(srcArray + i) - DIGIT_ZERO_IN_ASCII_OFFSET;
+		digit = (int16_t)(ch) - DIGIT_ZERO_IN_ASCII_OFFSET;
 		// digits are processed from most significant to least
-		number += digit * myPow(10, (SIZE_INFO_LENGTH - 1 - i));
+		number += sign * digit * myPow(10, (arraySize - 1 - i));
+		sign = 1;
 	}
 	return number;
 }
@@ -83,7 +99,7 @@ void esp8266_requestDataSize(void) {
 	}
 	dma_tranfer_cplt = false;
 
-	data_size = convertCharArrayToNumber(rx_data_size);
+	data_size = (uint16_t)convertCharArrayToNumber(rx_data_size, SIZE_INFO_LENGTH);
 	if ((data_size <= 0U) || (data_size > DATA_SIZE_MAX)) {
 		data_size_correct = false;
 	} else {

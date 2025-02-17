@@ -16,9 +16,14 @@ typedef enum {
 
 void display_init(void);
 void display_off(void);
+void display_clear(void);
 void display_update(void);
 
 void display_goto_xy(uint16_t x, uint16_t y);
+
+void display_blank_line(SH1106_Font_t font, uint16_t y);
+
+void display_puts(SH1106_Font_t font, char* str);
 
 void display_show_temperature(SH1106_Font_t font, float temperature);
 void display_show_humidity(SH1106_Font_t font, float humidity);

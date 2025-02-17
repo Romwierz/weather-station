@@ -6,7 +6,10 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 #include "display.h"
+
+#define SPACE_IN_ASCII 32U
 
 static char SH1106_LineBuf[128];
 
@@ -24,6 +27,11 @@ void display_off(void)
 	display_update();
 }
 
+void display_clear(void)
+{
+	SH1106_Fill(SH1106_COLOR_BLACK);
+}
+
 void display_update(void)
 {
 	SH1106_UpdateScreen();
@@ -32,6 +40,18 @@ void display_update(void)
 void display_goto_xy(uint16_t x, uint16_t y)
 {
 	SH1106_GotoXY(x, y);
+}
+
+void display_blank_line(SH1106_Font_t font, uint16_t y)
+{
+	SH1106_GotoXY(2, y);
+	memset(SH1106_LineBuf, SPACE_IN_ASCII, sizeof(SH1106_LineBuf));
+	SH1106_Puts(SH1106_LineBuf, font, SH1106_COLOR_WHITE);
+}
+
+void display_puts(SH1106_Font_t font, char* str)
+{
+	SH1106_Puts(str, font, SH1106_COLOR_WHITE);
 }
 
 void display_show_temperature(SH1106_Font_t font, float temperature)

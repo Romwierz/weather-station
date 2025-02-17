@@ -24,7 +24,8 @@ extern WiFi_WeatherData_t wifiData;
 
 void esp8266_requestDataSize(void);
 void esp8266_requestData(void);
-void readWiFiWeatherData();
+void readWiFiWeatherData(void);
+void parseWiFiWeatherData(char* src, WiFi_WeatherData_t* dst);
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
 
 #endif /* WIFI_MODULE_H_ */

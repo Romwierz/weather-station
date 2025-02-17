@@ -11,6 +11,9 @@
 
 #define SIZE_INFO_LENGTH				3U
 #define DATA_SIZE_MAX					30U
+#define ELEMENT_SIZE_MAX				5U
+
+#define COMMA_IN_ASCII_OFFSET			44U
 #define NEGATIVE_SIGN_IN_ASCII_OFFSET	45U
 #define DIGIT_ZERO_IN_ASCII_OFFSET		48U
 #define DIGIT_NINE_IN_ASCII_OFFSET		57U
@@ -94,12 +97,12 @@ void esp8266_requestDataSize(void) {
 	HAL_GPIO_WritePin(ESP8266_REQ_GPIO_Port, ESP8266_REQ_Pin, GPIO_PIN_RESET);
 
 	tickstart = HAL_GetTick();
-	while (!dma_tranfer_cplt) {
+	while (!dma_transfer_cplt) {
 		if ((HAL_GetTick() - tickstart) > REQUEST_RESPONSE_TIME_MAX) {
 			break;
 		};
 	}
-	dma_tranfer_cplt = false;
+	dma_transfer_cplt = false;
 
 	data_size = (uint16_t)convertCharArrayToNumber(rx_data_size, SIZE_INFO_LENGTH);
 	if ((data_size <= 0U) || (data_size > DATA_SIZE_MAX)) {
@@ -120,22 +123,86 @@ void esp8266_requestData(void) {
 		HAL_UART_Receive_DMA(&HUART_ESP8266, (uint8_t*) rx_data, data_size);
 		HAL_GPIO_WritePin(ESP8266_REQ_GPIO_Port, ESP8266_REQ_Pin, GPIO_PIN_SET);
 		tickstart = HAL_GetTick();
-		while (!dma_tranfer_cplt) {
+		while (!dma_transfer_cplt) {
 			if ((HAL_GetTick() - tickstart) > REQUEST_RESPONSE_TIME_MAX) {
 				break;
 			};
 		}
-		dma_tranfer_cplt = false;
+		dma_transfer_cplt = false;
 	} else {
 		HAL_GPIO_WritePin(ESP8266_REQ_GPIO_Port, ESP8266_REQ_Pin, GPIO_PIN_SET);
 	}
 }
 
-void readWiFiWeatherData() {
+void readWiFiWeatherData(void) {
 	esp8266_requestDataSize();
 	esp8266_requestData();
+	parseWiFiWeatherData(rx_data, &wifiData);
+}
+
+void parseWiFiWeatherData(char* src, WiFi_WeatherData_t* dst) {
+	char tmp[ELEMENT_SIZE_MAX];
+	uint16_t i = 0;
+	uint16_t src_element_offset = 0;
+	uint16_t src_element_size = 0;
+
+	// 1st struct member
+	while (*(src + src_element_offset + i) != COMMA_IN_ASCII_OFFSET) {
+		if (*(src + src_element_offset + i) == '\0') break;
+		tmp[i] = *(src + src_element_offset + i);
+		i++;
+	}
+	src_element_size = i;
+	src_element_offset += i + 1;
+	i = 0;
+	dst->temperature = (int8_t)convertCharArrayToNumber(tmp, src_element_size);
+
+	// 2nd struct member
+	while (*(src + src_element_offset + i) != COMMA_IN_ASCII_OFFSET) {
+		if (*(src + src_element_offset + i) == '\0') break;
+		tmp[i] = *(src + src_element_offset + i);
+		i++;
+	}
+	src_element_size = i;
+	src_element_offset += i + 1;
+	i = 0;
+	dst->feels_like = (int8_t)convertCharArrayToNumber(tmp, src_element_size);
+
+	// 3rd struct member
+	while (*(src + src_element_offset + i) != COMMA_IN_ASCII_OFFSET) {
+		if (*(src + src_element_offset + i) == '\0') break;
+		tmp[i] = *(src + src_element_offset + i);
+		i++;
+	}
+	src_element_size = i;
+	src_element_offset += i + 1;
+	i = 0;
+	dst->humidity = (int8_t)convertCharArrayToNumber(tmp, src_element_size);
+
+	// 4th struct member
+	while (*(src + src_element_offset + i) != COMMA_IN_ASCII_OFFSET) {
+		if (*(src + src_element_offset + i) == '\0') break;
+		tmp[i] = *(src + src_element_offset + i);
+		i++;
+	}
+	src_element_size = i;
+	src_element_offset += i + 1;
+	i = 0;
+	dst->pressure = (uint16_t)convertCharArrayToNumber(tmp, src_element_size);
+
+	// 5th struct member
+	while (*(src + src_element_offset + i) != COMMA_IN_ASCII_OFFSET) {
+		if (*(src + src_element_offset + i) == '\0') break;
+		tmp[i] = *(src + src_element_offset + i);
+		i++;
+	}
+	src_element_size = i;
+	src_element_offset += i + 1;
+	i = 0;
+	dst->wind_speed = (uint8_t)convertCharArrayToNumber(tmp, src_element_size);
+
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-	dma_tranfer_cplt = true;
+	dma_transfer_cplt = true;
 }

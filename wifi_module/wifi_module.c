@@ -9,13 +9,17 @@
 
 #define HUART_ESP8266 huart1
 
-#define SIZE_INFO_LENGTH 3U
-#define DATA_SIZE_MAX 15U
+#define SIZE_INFO_LENGTH				3U
+#define DATA_SIZE_MAX					30U
+#define DIGIT_ZERO_IN_ASCII_OFFSET		48U
+#define DIGIT_NINE_IN_ASCII_OFFSET		57U
 
-#define DIGIT_ZERO_IN_ASCII_OFFSET 48U
-#define DIGIT_NINE_IN_ASCII_OFFSET 57U
+#define REQUEST_RESPONSE_TIME_MAX 		2U
 
-#define REQUEST_RESPONSE_TIME_MAX 2U
+#define __HAL_UART_FLUSH_RDRREGISTER(__HANDLE__)  \
+  do{                \
+    SET_BIT((__HANDLE__)->Instance->RQR, UART_RXDATA_FLUSH_REQUEST); \
+  }  while(0U)
 
 volatile bool wifiDataReq = false;
 volatile bool dma_tranfer_cplt = false;
@@ -65,7 +69,7 @@ void esp8266_requestDataSize(void) {
 	memset(rx_data, 0, sizeof(rx_data));
 	data_size = 0;
 
-	__HAL_UART_FLUSH_DRREGISTER(&HUART_ESP8266);
+	__HAL_UART_FLUSH_RDRREGISTER(&HUART_ESP8266);
 	__HAL_UART_CLEAR_OREFLAG(&HUART_ESP8266);
 
 	HAL_UART_Receive_DMA(&HUART_ESP8266, (uint8_t*) rx_data_size, SIZE_INFO_LENGTH);
@@ -91,7 +95,7 @@ void esp8266_requestData(void) {
 	memset(rx_data_size, 0, sizeof(rx_data_size));
 	memset(rx_data, 0, sizeof(rx_data));
 
-	__HAL_UART_FLUSH_DRREGISTER(&HUART_ESP8266);
+	__HAL_UART_FLUSH_RDRREGISTER(&HUART_ESP8266);
 	__HAL_UART_CLEAR_OREFLAG(&HUART_ESP8266);
 
 	if (data_size_correct) {

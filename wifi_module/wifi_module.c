@@ -10,7 +10,7 @@
 #define HUART_ESP8266 huart1
 
 #define SIZE_INFO_LENGTH				3U
-#define DATA_SIZE_MAX					30U
+#define DATA_SIZE_MAX					50U
 #define ELEMENT_SIZE_MAX				5U
 
 #define COMMA_IN_ASCII_OFFSET			44U
@@ -18,7 +18,8 @@
 #define DIGIT_ZERO_IN_ASCII_OFFSET		48U
 #define DIGIT_NINE_IN_ASCII_OFFSET		57U
 
-#define REQUEST_RESPONSE_TIME_MAX 		2U
+/* max time between data size request and corresponding response */
+#define REQUEST_RESPONSE_TIME_MAX 		3000U
 
 #define __HAL_UART_FLUSH_RDRREGISTER(__HANDLE__)  \
   do{                \

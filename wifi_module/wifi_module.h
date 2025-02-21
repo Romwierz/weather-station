@@ -12,11 +12,15 @@
 #include <stdbool.h>
 
 typedef struct {
+	uint16_t id;
 	int8_t temperature;
 	int8_t feels_like;
-	int8_t humidity;
 	uint16_t pressure;
+	uint8_t humidity;
+	uint16_t visibility;
 	uint8_t wind_speed;
+	uint16_t wind_deg;
+	uint8_t clouds;
 } WiFi_WeatherData_t;
 
 extern volatile bool wifiDataReq;

@@ -156,7 +156,7 @@ void parseWiFiWeatherData(char* src, WiFi_WeatherData_t* dst) {
 	src_element_size = i;
 	src_element_offset += i + 1;
 	i = 0;
-	dst->temperature = (int8_t)convertCharArrayToNumber(tmp, src_element_size);
+	dst->id = (uint16_t)convertCharArrayToNumber(tmp, src_element_size);
 
 	// 2nd struct member
 	while (*(src + src_element_offset + i) != COMMA_IN_ASCII_OFFSET) {
@@ -167,7 +167,7 @@ void parseWiFiWeatherData(char* src, WiFi_WeatherData_t* dst) {
 	src_element_size = i;
 	src_element_offset += i + 1;
 	i = 0;
-	dst->feels_like = (int8_t)convertCharArrayToNumber(tmp, src_element_size);
+	dst->temperature = (int8_t)convertCharArrayToNumber(tmp, src_element_size);
 
 	// 3rd struct member
 	while (*(src + src_element_offset + i) != COMMA_IN_ASCII_OFFSET) {
@@ -178,7 +178,7 @@ void parseWiFiWeatherData(char* src, WiFi_WeatherData_t* dst) {
 	src_element_size = i;
 	src_element_offset += i + 1;
 	i = 0;
-	dst->humidity = (int8_t)convertCharArrayToNumber(tmp, src_element_size);
+	dst->feels_like = (int8_t)convertCharArrayToNumber(tmp, src_element_size);
 
 	// 4th struct member
 	while (*(src + src_element_offset + i) != COMMA_IN_ASCII_OFFSET) {
@@ -193,15 +193,63 @@ void parseWiFiWeatherData(char* src, WiFi_WeatherData_t* dst) {
 
 	// 5th struct member
 	while (*(src + src_element_offset + i) != COMMA_IN_ASCII_OFFSET) {
-		if (*(src + src_element_offset + i) == '\0') break;
+		if (*(src + src_element_offset + i) == '\0')
+			break;
 		tmp[i] = *(src + src_element_offset + i);
 		i++;
 	}
 	src_element_size = i;
 	src_element_offset += i + 1;
 	i = 0;
-	dst->wind_speed = (uint8_t)convertCharArrayToNumber(tmp, src_element_size);
+	dst->humidity = (uint8_t) convertCharArrayToNumber(tmp, src_element_size);
 
+	// 6th struct member
+	while (*(src + src_element_offset + i) != COMMA_IN_ASCII_OFFSET) {
+		if (*(src + src_element_offset + i) == '\0')
+			break;
+		tmp[i] = *(src + src_element_offset + i);
+		i++;
+	}
+	src_element_size = i;
+	src_element_offset += i + 1;
+	i = 0;
+	dst->visibility = (uint16_t) convertCharArrayToNumber(tmp, src_element_size);
+
+	// 7th struct member
+	while (*(src + src_element_offset + i) != COMMA_IN_ASCII_OFFSET) {
+		if (*(src + src_element_offset + i) == '\0')
+			break;
+		tmp[i] = *(src + src_element_offset + i);
+		i++;
+	}
+	src_element_size = i;
+	src_element_offset += i + 1;
+	i = 0;
+	dst->wind_speed = (uint8_t) convertCharArrayToNumber(tmp, src_element_size);
+
+	// 8th struct member
+	while (*(src + src_element_offset + i) != COMMA_IN_ASCII_OFFSET) {
+		if (*(src + src_element_offset + i) == '\0')
+			break;
+		tmp[i] = *(src + src_element_offset + i);
+		i++;
+	}
+	src_element_size = i;
+	src_element_offset += i + 1;
+	i = 0;
+	dst->wind_deg = (uint16_t) convertCharArrayToNumber(tmp, src_element_size);
+
+	// 9th struct member
+	while (*(src + src_element_offset + i) != COMMA_IN_ASCII_OFFSET) {
+		if (*(src + src_element_offset + i) == '\0')
+			break;
+		tmp[i] = *(src + src_element_offset + i);
+		i++;
+	}
+	src_element_size = i;
+	src_element_offset += i + 1;
+	i = 0;
+	dst->clouds = (uint8_t) convertCharArrayToNumber(tmp, src_element_size);
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {

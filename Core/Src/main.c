@@ -205,6 +205,60 @@ int __io_putchar(int ch)
 	return 1;
 }
 
+void read_bkup_registers(void)
+{
+	for (uint32_t i = 0; i < BKUP_DATA_COUNT; i++) {
+		bkup_register[i] = HAL_RTCEx_BKUPRead(&hrtc, i);
+	}
+
+	measurement_system_state = bkup_register[MEAS_SYS_STATE];
+
+	dht22_measurement.temperature = (float)bkup_register[DHT22_TEMP];
+	dht22_measurement.humidity = (float)bkup_register[DHT22_HUM];
+
+	pressure_local = (float)bkup_register[LPS25HB_PRESS];
+	temp_local = (float)bkup_register[LPS25HB_TEMP];
+	p0_local = (float)bkup_register[LPS25HB_P0];
+
+	wifiData.id = (uint16_t)bkup_register[WIFI_ID];
+	wifiData.temperature = (uint16_t)bkup_register[WIFI_TEMP];
+	wifiData.feels_like = (uint16_t)bkup_register[WIFI_FLS_LK];
+	wifiData.pressure = (uint16_t)bkup_register[WIFI_PRESS];
+	wifiData.humidity = (uint16_t)bkup_register[WIFI_HUM];
+	wifiData.visibility = (uint16_t)bkup_register[WIFI_VIS];
+	wifiData.wind_speed = (uint16_t)bkup_register[WIFI_WIND_SPD];
+	wifiData.wind_deg = (uint16_t)bkup_register[WIFI_WIND_DEG];
+	wifiData.clouds = (uint16_t)bkup_register[WIFI_CLOUDS];
+}
+
+void write_bkup_registers(void)
+{
+	HAL_PWR_EnableBkUpAccess();
+	HAL_RTCEx_BKUPWrite(&hrtc, MEAS_SYS_STATE, (uint32_t)measurement_system_state);
+
+	if (new_local_data) {
+		HAL_RTCEx_BKUPWrite(&hrtc, DHT22_TEMP, (uint32_t)dht22_measurement.temperature);
+		HAL_RTCEx_BKUPWrite(&hrtc, DHT22_HUM, (uint32_t)dht22_measurement.humidity);
+		HAL_RTCEx_BKUPWrite(&hrtc, LPS25HB_PRESS, (uint32_t)pressure_local);
+		HAL_RTCEx_BKUPWrite(&hrtc, LPS25HB_TEMP, (uint32_t)temp_local);
+		HAL_RTCEx_BKUPWrite(&hrtc, LPS25HB_P0, (uint32_t)p0_local);
+	}
+
+	if (new_wifi_data) {
+		HAL_RTCEx_BKUPWrite(&hrtc, WIFI_ID, (uint32_t)wifiData.id);
+		HAL_RTCEx_BKUPWrite(&hrtc, WIFI_TEMP, (uint32_t)wifiData.temperature);
+		HAL_RTCEx_BKUPWrite(&hrtc, WIFI_FLS_LK, (uint32_t)wifiData.feels_like);
+		HAL_RTCEx_BKUPWrite(&hrtc, WIFI_PRESS, (uint32_t)wifiData.pressure);
+		HAL_RTCEx_BKUPWrite(&hrtc, WIFI_HUM, (uint32_t)wifiData.humidity);
+		HAL_RTCEx_BKUPWrite(&hrtc, WIFI_VIS, (uint32_t)wifiData.visibility);
+		HAL_RTCEx_BKUPWrite(&hrtc, WIFI_WIND_SPD, (uint32_t)wifiData.wind_speed);
+		HAL_RTCEx_BKUPWrite(&hrtc, WIFI_WIND_DEG, (uint32_t)wifiData.wind_deg);
+		HAL_RTCEx_BKUPWrite(&hrtc, WIFI_CLOUDS, (uint32_t)wifiData.clouds);
+	}
+
+	HAL_PWR_DisableBkUpAccess();
+}
+
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	if (GPIO_Pin == B1_Pin){

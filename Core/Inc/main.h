@@ -75,6 +75,8 @@ void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
 void delay_us(uint32_t us);
+void read_bkup_registers(void);
+void write_bkup_registers(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

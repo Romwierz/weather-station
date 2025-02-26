@@ -29,7 +29,6 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
-#include <stdbool.h>
 #include "measurement_system.h"
 #include "wifi_module.h"
 /* USER CODE END Includes */
@@ -52,7 +51,13 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-//extern volatile enum System_state measurement_system_state;
+bool wakeup_from_btn = false;
+bool exited_from_standby = false;
+
+bool new_local_data = false;
+bool new_wifi_data = false;
+
+uint32_t bkup_register[BKUP_DATA_COUNT];
 
 /* USER CODE END PV */
 

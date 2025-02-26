@@ -31,12 +31,33 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdbool.h>
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
+enum {
+	MEAS_SYS_STATE	= RTC_BKP_DR0,
 
+	DHT22_TEMP		= RTC_BKP_DR1,
+	DHT22_HUM		= RTC_BKP_DR2,
+
+	LPS25HB_PRESS	= RTC_BKP_DR3,
+	LPS25HB_TEMP	= RTC_BKP_DR4,
+	LPS25HB_P0		= RTC_BKP_DR5,
+
+	WIFI_ID			= RTC_BKP_DR6,
+	WIFI_TEMP		= RTC_BKP_DR7,
+	WIFI_FLS_LK		= RTC_BKP_DR8,
+	WIFI_PRESS		= RTC_BKP_DR9,
+	WIFI_HUM 		= RTC_BKP_DR10,
+	WIFI_VIS		= RTC_BKP_DR11,
+	WIFI_WIND_SPD	= RTC_BKP_DR12,
+	WIFI_WIND_DEG	= RTC_BKP_DR13,
+	WIFI_CLOUDS		= RTC_BKP_DR14,
+
+	BKUP_DATA_COUNT	= RTC_BKP_DR15
+};
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -53,7 +74,7 @@ extern "C" {
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-
+void delay_us(uint32_t us);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
@@ -83,7 +104,15 @@ void Error_Handler(void);
 #define ESP8266_REQ_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
-void delay_us(uint32_t us);
+#define BKUP_DATA_MAX_CNT 32U
+
+extern bool wakeup_from_btn;
+extern bool exited_from_standby;
+
+extern bool new_local_data;
+extern bool new_wifi_data;
+
+extern uint32_t bkup_register[BKUP_DATA_COUNT];
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

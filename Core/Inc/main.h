@@ -75,8 +75,10 @@ void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
 void delay_us(uint32_t us);
+void check_reset_source(void);
 void read_bkup_registers(void);
 void write_bkup_registers(void);
+void enter_standby_mode(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

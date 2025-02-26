@@ -110,21 +110,30 @@ int main(void)
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start(&htim6);
 
-//  measurement_system_init();
+  check_reset_source();
 
-  HAL_Delay(1000);
+  if (exited_from_standby) {
+	  read_bkup_registers();
+  }
+  else {
+	  measurement_system_init();
+  }
+
+  if (wakeup_from_btn) {
+  	  HAL_GPIO_EXTI_Callback(B1_Pin);
+  }
+
+  measurement_system();
+
+  write_bkup_registers();
+
+  enter_standby_mode();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-//	  measurement_system();
-	  if (wifiDataReq) {
-		  readWiFiWeatherData();
-		  wifiDataReq = false;
-	}
-	  HAL_Delay(1000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -205,6 +214,22 @@ int __io_putchar(int ch)
 	return 1;
 }
 
+void check_reset_source(void)
+{
+	if (!(__HAL_PWR_GET_FLAG(PWR_FLAG_SB))) {
+		return;
+	}
+	exited_from_standby = true;
+
+	if (__HAL_PWR_GET_FLAG(PWR_FLAG_WUF2)) {
+		wakeup_from_btn = true;
+	}
+	// wakeup from RTC or Power-on reset
+	else {
+		wakeup_from_btn = false;
+	}
+}
+
 void read_bkup_registers(void)
 {
 	for (uint32_t i = 0; i < BKUP_DATA_COUNT; i++) {
@@ -259,11 +284,28 @@ void write_bkup_registers(void)
 	HAL_PWR_DisableBkUpAccess();
 }
 
+void enter_standby_mode(void)
+{
+	HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
+	SET_BIT(SCB->SCR, ((uint32_t)SCB_SCR_SEVONPEND_Msk));
+
+	__HAL_PWR_CLEAR_FLAG(PWR_FLAG_SB);
+	__HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
+
+	HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN2_LOW);
+
+	HAL_DBGMCU_EnableDBGStandbyMode();
+	HAL_PWR_EnterSTANDBYMode();
+}
+
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	if (GPIO_Pin == B1_Pin){
-//		measurement_system_state++;
-		wifiDataReq = true;
+		measurement_system_state++;
+		if (measurement_system_state > TURNED_OFF) {
+			measurement_system_state = RUNNING_LOCAL_DATA;
+		}
+		HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
 	}
 }
 

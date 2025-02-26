@@ -5,73 +5,123 @@
  *      Author: miczu
  */
 
+#include "main.h"
 #include "measurement_system.h"
 #include "display.h"
-#include "dht22.h"
 #include "lps25hb.h"
+#include "wifi_module.h"
 
 #include "stm32l4xx_hal.h"
 
-volatile enum System_state measurement_system_state = RUNNING;
+volatile enum System_state measurement_system_state = RUNNING_LOCAL_DATA;
 
 DHT22_Measurement_t dht22_measurement;
-float pressure;
-float p0;
-float temp;
+float pressure_local;
+float p0_local;
+float temp_local;
 
 void measurement_system_init(void)
 {
 	display_init();
 
-	if (!lps25hb_init()) {
+	while (!lps25hb_init()) {
 		display_show_error(LPS25HB_ERROR);
 		display_update();
+		display_off();
 		while (1);
 	}
 	lps25hb_calib(6);
 }
 
-void measurement_system(void)
-{
-	switch (measurement_system_state) {
-		case RUNNING:
-			HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
-			measurement_system_on();
-			break;
-		case TURNED_OFF:
-			HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
-			measurement_system_off();
-			while(measurement_system_state == TURNED_OFF);
-			break;
-		default:
-			measurement_system_state = RUNNING;
-			break;
-	}
-}
-
-void measurement_system_on(void)
+static void perform_local_measurements(void)
 {
 	dht22_measurement = DHT22_ReadMeasurement();
 
+	pressure_local = lps25hb_readPressureMillibars();
+	temp_local = lps25hb_readTemperatureC();
+	p0_local = lps25hb_pressureToRelativePressure(temp_local + 273.15f, pressure_local);
+}
+
+static void screen_local_data(void)
+{
+	display_clear();
+
 	display_goto_xy(2, 0);
-	display_show_temperature(Font_11x18, dht22_measurement.temperature);
+	display_puts(Font_7x10, "Local");
 
-	display_goto_xy(2, 18);
-	display_show_humidity(Font_11x18, dht22_measurement.humidity);
+	display_goto_xy(2, 10);
+	display_show_temperature(Font_7x10, dht22_measurement.temperature);
 
-	display_update();
+	display_goto_xy(2, 20);
+	display_show_humidity(Font_7x10, dht22_measurement.humidity);
 
-	pressure = lps25hb_readPressureMillibars();
-	temp = lps25hb_readTemperatureC();
-	p0 = lps25hb_pressureToRelativePressure(temp + 273.15f, pressure);
+	display_goto_xy(2, 30);
+	display_show_pressure(Font_7x10, pressure_local);
 
-	display_goto_xy(2, 36);
-	display_show_pressure(Font_7x10, pressure);
-
-	display_goto_xy(2, 46);
-	display_show_relative_pressure(Font_7x10, p0);
+	display_goto_xy(2, 40);
+	display_show_relative_pressure(Font_7x10, p0_local);
 
 	display_update();
+}
+
+static void screen_wifi_data(void)
+{
+	display_clear();
+
+	display_goto_xy(2, 0);
+	display_puts(Font_7x10, "WiFi ");
+
+	display_goto_xy(2, 10);
+	display_show_temperature(Font_7x10, (float) wifiData.temperature);
+
+	display_goto_xy(2, 20);
+	display_show_humidity(Font_7x10, (float) wifiData.humidity);
+
+	display_goto_xy(2, 30);
+	display_show_pressure(Font_7x10, (float) wifiData.pressure);
+
+	display_update();
+}
+
+static void screen_off(void)
+{
+	measurement_system_off();
+}
+
+void measurement_system(void)
+{
+	// if wakeup from button only change screen and return
+	if (wakeup_from_btn) {
+		switch (measurement_system_state) {
+		case RUNNING_LOCAL_DATA:
+			screen_local_data();
+			break;
+		case RUNNING_WIFI_DATA:
+			screen_wifi_data();
+			break;
+		case TURNED_OFF:
+			screen_off();
+			break;
+		default:
+			measurement_system_state = TURNED_OFF;
+			break;
+		}
+		return;
+	}
+
+	// else do measurements and/or read wifi data
+	perform_local_measurements();
+	new_local_data = true;
+	readWiFiWeatherData();
+	new_wifi_data = true;
+
+	// update screen if there is new data
+	if ((measurement_system_state == RUNNING_LOCAL_DATA) && (new_local_data = true)) {
+		screen_local_data();
+	}
+	else if ((measurement_system_state == RUNNING_WIFI_DATA) && (new_wifi_data = true)) {
+		screen_wifi_data();
+	}
 }
 
 void measurement_system_off(void)

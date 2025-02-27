@@ -113,13 +113,12 @@ void measurement_system(void)
 	perform_local_measurements();
 	new_local_data = true;
 	readWiFiWeatherData();
-	new_wifi_data = true;
 
 	// update screen if there is new data
-	if ((measurement_system_state == RUNNING_LOCAL_DATA) && (new_local_data = true)) {
+	if ((measurement_system_state == RUNNING_LOCAL_DATA) && (new_local_data == true)) {
 		screen_local_data();
 	}
-	else if ((measurement_system_state == RUNNING_WIFI_DATA) && (new_wifi_data = true)) {
+	else if ((measurement_system_state == RUNNING_WIFI_DATA) && (new_wifi_data == true)) {
 		screen_wifi_data();
 	}
 }

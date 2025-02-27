@@ -254,4 +254,12 @@ void parseWiFiWeatherData(char* src, WiFi_WeatherData_t* dst) {
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	dma_transfer_cplt = true;
+
+	static uint8_t dma_transfer_cplt_cnt = 0;
+	dma_transfer_cplt_cnt++;
+
+	// set flag on second complete transfer since the first one is actually the data size
+	if (dma_transfer_cplt_cnt > 1U) {
+		new_wifi_data = true;
+	}
 }

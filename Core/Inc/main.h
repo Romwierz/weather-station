@@ -95,6 +95,8 @@ void enter_standby_mode(void);
 #define DHT22_GPIO_Port GPIOA
 #define CS_LPS25HB_Pin GPIO_PIN_11
 #define CS_LPS25HB_GPIO_Port GPIOB
+#define ESP8266_NRST_Pin GPIO_PIN_7
+#define ESP8266_NRST_GPIO_Port GPIOC
 #define TMS_Pin GPIO_PIN_13
 #define TMS_GPIO_Port GPIOA
 #define TCK_Pin GPIO_PIN_14

@@ -26,6 +26,8 @@ typedef struct {
 extern volatile bool wifiDataReq;
 extern WiFi_WeatherData_t wifiData;
 
+void esp8266_exitDeepSleep(void);
+void esp8266_waitForBoot();
 void esp8266_requestDataSize(void);
 void esp8266_requestData(void);
 void readWiFiWeatherData(void);

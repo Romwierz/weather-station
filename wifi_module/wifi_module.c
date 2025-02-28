@@ -18,8 +18,12 @@
 #define DIGIT_ZERO_IN_ASCII_OFFSET		48U
 #define DIGIT_NINE_IN_ASCII_OFFSET		57U
 
+#define ESP8266_BOOT_TIME_MS					300U
+#define ESP8266_TIME_BETWEEN_RESETS_MIN_MS		150U
+#define ESP8266_TIME_BETWEEN_REQUESTS_MIN_US	100U
+#define ESP8266_RESET_LOW_PULSE_US				100U
 /* max time between data size request and corresponding response */
-#define REQUEST_RESPONSE_TIME_MAX 		3000U
+#define ESP8266_REQUEST_RESPONSE_TIME_MAX_MS 	3000U
 
 #define __HAL_UART_FLUSH_RDRREGISTER(__HANDLE__)  \
   do{                \
@@ -86,6 +90,23 @@ static int16_t convertCharArrayToNumber(char* srcArray, int16_t arraySize) {
 	return number;
 }
 
+/* in order to exit deep sleep properly, esp8266 may have to be reset twice */
+void esp8266_exitDeepSleep(void) {
+	HAL_GPIO_WritePin(ESP8266_NRST_GPIO_Port, ESP8266_NRST_Pin, GPIO_PIN_RESET);
+	delay_us(ESP8266_RESET_LOW_PULSE_US);
+	HAL_GPIO_WritePin(ESP8266_NRST_GPIO_Port, ESP8266_NRST_Pin, GPIO_PIN_SET);
+
+	HAL_Delay(ESP8266_TIME_BETWEEN_RESETS_MIN_MS);
+
+	HAL_GPIO_WritePin(ESP8266_NRST_GPIO_Port, ESP8266_NRST_Pin, GPIO_PIN_RESET);
+	delay_us(ESP8266_RESET_LOW_PULSE_US);
+	HAL_GPIO_WritePin(ESP8266_NRST_GPIO_Port, ESP8266_NRST_Pin, GPIO_PIN_SET);
+}
+
+void esp8266_waitForBoot(void) {
+	HAL_Delay(ESP8266_BOOT_TIME_MS);
+}
+
 void esp8266_requestDataSize(void) {
 	memset(rx_data_size, 0, sizeof(rx_data_size));
 	memset(rx_data, 0, sizeof(rx_data));
@@ -99,7 +120,7 @@ void esp8266_requestDataSize(void) {
 
 	tickstart = HAL_GetTick();
 	while (!dma_transfer_cplt) {
-		if ((HAL_GetTick() - tickstart) > REQUEST_RESPONSE_TIME_MAX) {
+		if ((HAL_GetTick() - tickstart) > ESP8266_REQUEST_RESPONSE_TIME_MAX_MS) {
 			break;
 		};
 	}
@@ -125,7 +146,7 @@ void esp8266_requestData(void) {
 		HAL_GPIO_WritePin(ESP8266_REQ_GPIO_Port, ESP8266_REQ_Pin, GPIO_PIN_SET);
 		tickstart = HAL_GetTick();
 		while (!dma_transfer_cplt) {
-			if ((HAL_GetTick() - tickstart) > REQUEST_RESPONSE_TIME_MAX) {
+			if ((HAL_GetTick() - tickstart) > ESP8266_REQUEST_RESPONSE_TIME_MAX_MS) {
 				break;
 			};
 		}
@@ -136,8 +157,20 @@ void esp8266_requestData(void) {
 }
 
 void readWiFiWeatherData(void) {
-	esp8266_requestDataSize();
-	esp8266_requestData();
+	esp8266_exitDeepSleep();
+	esp8266_waitForBoot();
+	// try to obtain wifi data 10 times
+	for (uint8_t i = 0; i < 10; i++) {
+		esp8266_requestDataSize();
+		esp8266_requestData();
+		if (new_wifi_data == true) {
+			break;
+		}
+		delay_us(ESP8266_TIME_BETWEEN_REQUESTS_MIN_US);
+	}
+	if (new_wifi_data == false) {
+		return;
+	}
 	parseWiFiWeatherData(rx_data, &wifiData);
 }
 

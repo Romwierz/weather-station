@@ -94,7 +94,10 @@ void measurement_system(void)
 {
 	perform_local_measurements();
 
+	if (rtc_wakeup_cnt > 4) {
 		readWiFiWeatherData();
+		rtc_wakeup_cnt = 0;
+	}
 
 	// update screen if there is new data
 	if ((measurement_system_state == RUNNING_LOCAL_DATA) && (new_local_data == true)) {
@@ -107,19 +110,19 @@ void measurement_system(void)
 
 void measurement_system_screen_change(void)
 {
-		switch (measurement_system_state) {
-		case RUNNING_LOCAL_DATA:
-			screen_local_data();
-			break;
-		case RUNNING_WIFI_DATA:
-			screen_wifi_data();
-			break;
-		case TURNED_OFF:
-			screen_off();
-			break;
-		default:
-			measurement_system_state = TURNED_OFF;
-			break;
+	switch (measurement_system_state) {
+	case RUNNING_LOCAL_DATA:
+		screen_local_data();
+		break;
+	case RUNNING_WIFI_DATA:
+		screen_wifi_data();
+		break;
+	case TURNED_OFF:
+		screen_off();
+		break;
+	default:
+		measurement_system_state = TURNED_OFF;
+		break;
 	}
 }
 

@@ -56,7 +56,9 @@ enum {
 	WIFI_WIND_DEG	= RTC_BKP_DR13,
 	WIFI_CLOUDS		= RTC_BKP_DR14,
 
-	BKUP_DATA_COUNT	= RTC_BKP_DR15
+	RTC_WAKEUP_COUNT = RTC_BKP_DR15,
+
+	BKUP_DATA_COUNT	= RTC_BKP_DR16
 };
 /* USER CODE END ET */
 
@@ -76,7 +78,7 @@ void Error_Handler(void);
 /* USER CODE BEGIN EFP */
 void my_RTC_Init(void);
 void delay_us(uint32_t us);
-void check_reset_source(void);
+void check_wakeup_source(void);
 void read_bkup_registers(void);
 void write_bkup_registers(void);
 void rtc_clear_wakeup_flag(void);
@@ -119,6 +121,8 @@ extern bool exited_from_standby;
 
 extern bool new_local_data;
 extern bool new_wifi_data;
+
+extern uint8_t rtc_wakeup_cnt;
 
 extern uint32_t bkup_register[BKUP_DATA_COUNT];
 /* USER CODE END Private defines */

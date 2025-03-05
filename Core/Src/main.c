@@ -57,6 +57,8 @@ bool exited_from_standby = false;
 bool new_local_data = false;
 bool new_wifi_data = false;
 
+uint8_t rtc_wakeup_cnt;
+
 uint32_t bkup_register[BKUP_DATA_COUNT];
 
 /* USER CODE END PV */
@@ -110,7 +112,9 @@ int main(void)
   my_RTC_Init();
   HAL_TIM_Base_Start(&htim6);
 
-  check_reset_source();
+  HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
+
+  check_wakeup_source();
 
   if (exited_from_standby) {
 	  read_bkup_registers();
@@ -119,14 +123,18 @@ int main(void)
 	  measurement_system_init();
   }
 
+  if ((wakeup_from_btn == false) || (__HAL_RTC_WAKEUPTIMER_GET_FLAG(&hrtc, RTC_FLAG_WUTF) == 1U)) {
+	  rtc_wakeup_cnt++;
+  }
   if (wakeup_from_btn) {
   	  HAL_GPIO_EXTI_Callback(B1_Pin);
+	  write_bkup_registers();
+	  enter_standby_mode();
   }
 
   measurement_system();
 
   write_bkup_registers();
-
   enter_standby_mode();
   /* USER CODE END 2 */
 
@@ -232,7 +240,7 @@ int __io_putchar(int ch)
 	return 1;
 }
 
-void check_reset_source(void)
+void check_wakeup_source(void)
 {
 	if (!(__HAL_PWR_GET_FLAG(PWR_FLAG_SB))) {
 		return;
@@ -272,6 +280,8 @@ void read_bkup_registers(void)
 	wifiData.wind_speed = (uint16_t)bkup_register[WIFI_WIND_SPD];
 	wifiData.wind_deg = (uint16_t)bkup_register[WIFI_WIND_DEG];
 	wifiData.clouds = (uint16_t)bkup_register[WIFI_CLOUDS];
+
+	rtc_wakeup_cnt = (uint8_t)bkup_register[RTC_WAKEUP_COUNT];
 }
 
 void write_bkup_registers(void)
@@ -298,6 +308,8 @@ void write_bkup_registers(void)
 		HAL_RTCEx_BKUPWrite(&hrtc, WIFI_WIND_DEG, (uint32_t)wifiData.wind_deg);
 		HAL_RTCEx_BKUPWrite(&hrtc, WIFI_CLOUDS, (uint32_t)wifiData.clouds);
 	}
+
+	HAL_RTCEx_BKUPWrite(&hrtc, RTC_WAKEUP_COUNT, (uint32_t)rtc_wakeup_cnt);
 
 	HAL_PWR_DisableBkUpAccess();
 }

@@ -40,6 +40,8 @@ static void perform_local_measurements(void)
 	pressure_local = lps25hb_readPressureMillibars();
 	temp_local = lps25hb_readTemperatureC();
 	p0_local = lps25hb_pressureToRelativePressure(temp_local + 273.15f, pressure_local);
+
+	new_local_data = true;
 }
 
 static void screen_local_data(void)
@@ -90,8 +92,21 @@ static void screen_off(void)
 
 void measurement_system(void)
 {
-	// if wakeup from button only change screen and return
-	if (wakeup_from_btn) {
+	perform_local_measurements();
+
+		readWiFiWeatherData();
+
+	// update screen if there is new data
+	if ((measurement_system_state == RUNNING_LOCAL_DATA) && (new_local_data == true)) {
+		screen_local_data();
+	}
+	else if ((measurement_system_state == RUNNING_WIFI_DATA) && (new_wifi_data == true)) {
+		screen_wifi_data();
+	}
+}
+
+void measurement_system_screen_change(void)
+{
 		switch (measurement_system_state) {
 		case RUNNING_LOCAL_DATA:
 			screen_local_data();
@@ -105,21 +120,6 @@ void measurement_system(void)
 		default:
 			measurement_system_state = TURNED_OFF;
 			break;
-		}
-		return;
-	}
-
-	// else do measurements and/or read wifi data
-	perform_local_measurements();
-	new_local_data = true;
-	readWiFiWeatherData();
-
-	// update screen if there is new data
-	if ((measurement_system_state == RUNNING_LOCAL_DATA) && (new_local_data == true)) {
-		screen_local_data();
-	}
-	else if ((measurement_system_state == RUNNING_WIFI_DATA) && (new_wifi_data == true)) {
-		screen_wifi_data();
 	}
 }
 

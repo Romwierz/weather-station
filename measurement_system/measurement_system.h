@@ -23,6 +23,7 @@ extern float temp_local;
 
 void measurement_system_init(void);
 void measurement_system(void);
+void measurement_system_screen_change(void);
 void measurement_system_off(void);
 
 #endif /* MEASUREMENT_SYSTEM_H_ */

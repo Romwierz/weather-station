@@ -127,7 +127,7 @@ int main(void)
 	  rtc_wakeup_cnt++;
   }
   if (wakeup_from_btn) {
-  	  HAL_GPIO_EXTI_Callback(B1_Pin);
+	  HAL_GPIO_EXTI_Callback(B1_Pin);
 	  write_bkup_registers();
 	  enter_standby_mode();
   }
@@ -358,7 +358,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 		if (measurement_system_state > TURNED_OFF) {
 			measurement_system_state = RUNNING_LOCAL_DATA;
 		}
-		HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+		measurement_system_screen_change();
 	}
 }
 

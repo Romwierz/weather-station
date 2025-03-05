@@ -74,6 +74,7 @@ enum {
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
+void my_RTC_Init(void);
 void delay_us(uint32_t us);
 void check_reset_source(void);
 void read_bkup_registers(void);

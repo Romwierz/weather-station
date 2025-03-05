@@ -20,7 +20,6 @@
 #include "main.h"
 #include "dma.h"
 #include "i2c.h"
-#include "rtc.h"
 #include "spi.h"
 #include "tim.h"
 #include "usart.h"
@@ -28,6 +27,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "rtc.h"
 #include <stdio.h>
 #include "measurement_system.h"
 #include "wifi_module.h"
@@ -106,8 +106,8 @@ int main(void)
   MX_I2C3_Init();
   MX_SPI2_Init();
   MX_USART1_UART_Init();
-  MX_RTC_Init();
   /* USER CODE BEGIN 2 */
+  my_RTC_Init();
   HAL_TIM_Base_Start(&htim6);
 
   check_reset_source();
@@ -197,6 +197,24 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+void my_RTC_Init(void)
+{
+  /** Initialize RTC Only
+  */
+  hrtc.Instance = RTC;
+  hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
+  hrtc.Init.AsynchPrediv = 127;
+  hrtc.Init.SynchPrediv = 255;
+  hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
+  hrtc.Init.OutPutRemap = RTC_OUTPUT_REMAP_NONE;
+  hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
+  hrtc.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
+  if (HAL_RTC_Init(&hrtc) != HAL_OK)
+  {
+    Error_Handler();
+  }
+}
+
 void delay_us(uint32_t us)
 {
 	__HAL_TIM_SET_COUNTER(&htim6, 0);

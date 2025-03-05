@@ -302,15 +302,38 @@ void write_bkup_registers(void)
 	HAL_PWR_DisableBkUpAccess();
 }
 
+void rtc_clear_wakeup_flag(void)
+{
+	do {
+		__HAL_RTC_WAKEUPTIMER_CLEAR_FLAG(&hrtc, RTC_FLAG_WUTF);
+		__ISB();
+	} while (__HAL_RTC_WAKEUPTIMER_GET_FLAG(&hrtc, RTC_FLAG_WUTF));
+}
+
 void enter_standby_mode(void)
 {
 	HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
-	SET_BIT(SCB->SCR, ((uint32_t)SCB_SCR_SEVONPEND_Msk));
-
-	__HAL_PWR_CLEAR_FLAG(PWR_FLAG_SB);
-	__HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
+	HAL_PWR_EnableSEVOnPend();
 
 	HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN2_LOW);
+
+	if (wakeup_from_btn) {
+		__HAL_PWR_CLEAR_FLAG(PWR_FLAG_SB);
+		__HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
+	}
+	else {
+		__HAL_PWR_CLEAR_FLAG(PWR_FLAG_SB);
+		/* wakeup line event flag must also be cleared
+		 * even if wakeup source is rtc,
+		 * because this flag can be set even during run mode */
+		__HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
+
+		/* reset wakeup timer only after rtc wakeup */
+		HAL_PWR_EnableBkUpAccess();
+		rtc_clear_wakeup_flag();
+		HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 5, RTC_WAKEUPCLOCK_CK_SPRE_16BITS);
+		HAL_PWR_DisableBkUpAccess();
+	}
 
 	HAL_DBGMCU_EnableDBGStandbyMode();
 	HAL_PWR_EnterSTANDBYMode();

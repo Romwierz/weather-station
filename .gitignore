@@ -75,3 +75,5 @@ environmental-monitoring-system.code-workspace
 *.launch
 Drivers/
 *.ld
+*.mxproject
+*.mxsession
